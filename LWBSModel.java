@@ -33,7 +33,7 @@ public class LWBSModel {
 
         // System load factors
         predictors.put("arrivalRatePerHour", 1.03);
-        predictors.put("waitingRoomCount", 1.05);
+        predictors.put("hostQueueSize", 1.05);
         predictors.put("boardersCount", 1.02);
 
         // Time of arrival (reference: 12AM-6AM = 1.0)
@@ -68,8 +68,7 @@ public class LWBSModel {
      */
     public double predictLWBSProbability(
             Patient patient, 
-            int currentWaitingRoomCount,
-            int currentBoardersCount, 
+            int hostQueueLength,
             double currentArrivalRate,
             double doorToProviderTime,
             int currentHour
@@ -77,9 +76,8 @@ public class LWBSModel {
 
         Map<String, Double> predictorValues = buildPatientPredictors(
             patient, 
-            currentWaitingRoomCount, 
-            currentBoardersCount,
-            currentArrivalRate, 
+            hostQueueLength, 
+            currentArrivalRate,
             doorToProviderTime, 
             currentHour
         );
@@ -94,8 +92,7 @@ public class LWBSModel {
      */
     private Map<String, Double> buildPatientPredictors(
             Patient patient, 
-            int waitingRoomCount,
-            int boardersCount, 
+            int hostQueueSize,
             double arrivalRate,
             double doorToProviderTime, 
             int currentHour
@@ -109,9 +106,7 @@ public class LWBSModel {
 
         // System state predictors
         predictors.put("arrivalRatePerHour", arrivalRate);
-        predictors.put("waitingRoomCount", (double) waitingRoomCount);
-        predictors.put("boardersCount", (double) boardersCount);
-
+        predictors.put("hostQueueSize", (double) hostQueueSize);
         // Time-based predictors (one-hot encoded)
         setHourPredictors(predictors, currentHour);
 
@@ -200,23 +195,19 @@ public class LWBSModel {
      */
     public void debugPrediction(
             Patient patient, 
-            int currentWaitingRoomCount,
-            int currentBoardersCount, 
+            int hostQueueLength,
             double currentArrivalRate,
             double doorToProviderTime,
             int currentHour
         ) {
         
         Map<String, Double> predictorValues = buildPatientPredictors(
-            patient, currentWaitingRoomCount, currentBoardersCount,
-            currentArrivalRate, doorToProviderTime, currentHour
+            patient, hostQueueLength, currentArrivalRate, doorToProviderTime, currentHour
         );
         
         System.out.println("=== LWBS DEBUG ===");
-        System.out.println("Patient ESI: " + patient.level + ", Age: " + patient.age);
+        System.out.println("Patient ESI: " + patient.ESILevel + ", Age: " + patient.age);
         System.out.println("Door-to-provider time: " + doorToProviderTime + " minutes");
-        System.out.println("Waiting room count: " + currentWaitingRoomCount);
-        System.out.println("Boarders count: " + currentBoardersCount);
         
         double intercept = Math.log(lwbsBaseRate / (1 - lwbsBaseRate));
         double z = intercept;
