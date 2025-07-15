@@ -20,13 +20,17 @@ public class Patient {
 
     // Station timing
     public double sortingAT;
+    public double sortingPT;
     public double sortingDT;
     public double registrationAT;
+    public double registrationPT;
     public double registrationDT;
     public double triageAT;
+    public double triagePT;
     public double triageDT;
-    public double medicalZoneAT;
-    public double medicalZoneDT;
+    public double zoneAT;
+    public double zonePT;
+    public double zoneDT;
 
     public Patient(int regNo) {
         // Initialize all fields
