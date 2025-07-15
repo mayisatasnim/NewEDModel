@@ -77,6 +77,7 @@ public class Simulator {
                                 System.out.println("[Simulator-ERROR]: Unknown zone");
                                 break;
                         }
+                        break;
                     default:
                         System.out.println("[Simulator-ERROR]: unknown event");
                 }
@@ -102,7 +103,7 @@ public class Simulator {
             System.out.println("Last event time: " + currentTime);
             System.out.println("Events unprocessed: "+ eventList.size());
             System.out.println("\n=== QUICK STAGE OF SIMULATION SUMMARY ===\n");
-            sortNurse.printQuickStats();
+            // sortNurse.printQuickStats();
             // registration.printQuickStats();
             // triage.printQuickStats();
             // eruZone.printQuickStats();
