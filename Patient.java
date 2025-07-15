@@ -13,11 +13,6 @@ public class Patient {
     public double LWBSProbability;
     public double LWBSTime;          
 
-    //time
-    // Overall ED timing
-    public double edArrivalTime;
-    public double edDepartureTime;
-
     // Station timing
     public double sortingAT;
     public double sortingPT;
