@@ -1,6 +1,6 @@
 import java.util.List;
 
-public class Statistics {
+public abstract class Statistics extends Metrics{
     enum Stage {
         SORTING,
         REGISTRATION,
@@ -10,27 +10,34 @@ public class Statistics {
     }
     enum Property {
         WAITING_TIME,
-        SERVICE_TIME,
-        LOS,
-        DOOR_TO_PROVIDER_TIME
+        PROCESSING_TIME,
+        RESPONSE_TIME,
+        DOOR_TO_PROVIDER_TIME,
+        INTER_ARRIVAL_TIME     
     }
-    public static double calculateAverage(List<Patient> patients, Stage stage,Property property) {
+    public Statistics(String stationName) {
+        super(stationName);
+    }
+    public static double calculateMean(List<Patient> patients, Stage stage, Property property) {
         double sum = 0.0;
         int count = 0;
         for (Patient p : patients) {
             double value = 0.0;
+            if(property == Property.INTER_ARRIVAL_TIME) {
+                return totalInterArrivalTime(patients, stage) / patients.size();
+            }
             switch (stage) {
                 case SORTING:
                     switch (property) {
                         case WAITING_TIME:
                             value = p.sortingPT - p.sortingAT;
                             break;
-                        case SERVICE_TIME:
+                        case PROCESSING_TIME:
                             value = p.sortingDT - p.sortingPT;
                             break;
-                        case LOS:
+                        case RESPONSE_TIME:
                             value = p.sortingDT - p.sortingAT;
-                            break;
+                            break;        
                         default:
                             throw new IllegalArgumentException("Unknown property for SORTING stage");
                     }
@@ -40,10 +47,10 @@ public class Statistics {
                         case WAITING_TIME:
                             value = p.registrationPT - p.registrationAT;
                             break;
-                        case SERVICE_TIME:
+                        case PROCESSING_TIME:
                             value = p.registrationDT - p.registrationPT;
                             break;
-                        case LOS:
+                        case RESPONSE_TIME:
                             value = p.registrationDT - p.registrationAT;
                             break;
                         default:
@@ -55,10 +62,10 @@ public class Statistics {
                         case WAITING_TIME:
                             value = p.triagePT - p.triageAT;
                             break;
-                        case SERVICE_TIME:
+                        case PROCESSING_TIME:
                             value = p.triageDT - p.triagePT;
                             break;
-                        case LOS:
+                        case RESPONSE_TIME:
                             value = p.triageDT - p.triageAT;
                             break;
                         default:
@@ -70,10 +77,10 @@ public class Statistics {
                         case WAITING_TIME:
                             value = p.zonePT - p.zoneAT;
                             break;
-                        case SERVICE_TIME:
+                        case PROCESSING_TIME:
                             value = p.zoneDT - p.zonePT;
                             break;
-                        case LOS:
+                        case RESPONSE_TIME:
                             value = p.zoneDT - p.zoneAT;
                             break;
                         default:
@@ -82,7 +89,7 @@ public class Statistics {
                     break;
                 case ED:
                     switch (property) {
-                        case LOS:
+                        case RESPONSE_TIME:
                             value = p.zoneDT - p.sortingAT;
                             break;
                         case DOOR_TO_PROVIDER_TIME:
@@ -97,6 +104,44 @@ public class Statistics {
             }
             sum += value;
             count++;
+        }
+        return count > 0 ? sum / count : 0.0;
+    }
+    public static double totalInterArrivalTime(List<Patient> patients, Stage stage) {
+        double sum = 0.0;
+        int count = 0;
+        switch (stage) {
+            case ED:
+            case SORTING:
+                for (int i = 1; i < patients.size(); i++) {
+                    double interArrivalTime = patients.get(i).sortingAT - patients.get(i - 1).sortingAT;
+                    sum += interArrivalTime;
+                    count++;
+                }
+                break;
+            case REGISTRATION:
+                for (int i = 1; i < patients.size(); i++) {
+                    double interArrivalTime = patients.get(i).registrationAT - patients.get(i - 1).registrationAT;
+                    sum += interArrivalTime;
+                    count++;
+                }
+                break;
+            case TRIAGE:
+                for (int i = 1; i < patients.size(); i++) {
+                    double interArrivalTime = patients.get(i).triageAT - patients.get(i - 1).triageAT;
+                    sum += interArrivalTime;
+                    count++;
+                }
+                break;
+            case ZONE:
+                for (int i = 1; i < patients.size(); i++) {
+                    double interArrivalTime = patients.get(i).zoneAT - patients.get(i - 1).zoneAT;
+                    sum += interArrivalTime;
+                    count++;
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown stage for inter-arrival time calculation");
         }
         return count > 0 ? sum / count : 0.0;
     }

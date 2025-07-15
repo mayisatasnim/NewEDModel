@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class Simulator {
-    int debug = 1;
+    int debug = 0;
     int totalArrivals = 0;
     double arrivalRate = 10 / 60.0;
     double currentTime = 0;
@@ -41,7 +41,7 @@ public class Simulator {
     public void configureServiceTimes() {
         sortNurse.setServiceTime(0, 0);
         registration.setServiceTime(0, 0);
-        triage.setServiceTime(10.0, 5.0);
+        triage.setServiceTime(0, 0);
         eruZone.setServiceTime(4.0, 1.0);
         redZone.setServiceTime(4.0, 1.0);
         greenZone.setServiceTime(4.0, 1.0);
@@ -94,32 +94,7 @@ public class Simulator {
         }
         
         // some statistics
-        if(debug == 1) {
-            System.out.println("\n===DAY's SIMULATION SUMMARY ===");
-            System.out.println("ED Total arrivals: " + totalArrivals);
-            System.out.println("Total patients disposed by ED: " + edDisposedPatients.size());
-            double totalUnprocessedPatients = (
-                sortNurse.sortNQueue.size() + 
-                registration.regQueue.size() +
-                triage.triageQueue.size() + 
-                eruZone.zoneQueue.size() +
-                redZone.zoneQueue.size() +
-                greenZone.zoneQueue.size() +
-                fastTrackZone.zoneQueue.size());
-            System.out.println("Total unprocessed patients in ED: " + totalUnprocessedPatients);
-            System.out.println("ED Mean Door-to-Provider time: " + Statistics.calculateAverage(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.DOOR_TO_PROVIDER_TIME));
-            System.out.println("ED Mean LOS time: " + Statistics.calculateAverage(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.LOS));
-            System.out.println("Last event time: " + currentTime);
-            System.out.println("Events unprocessed: "+ eventList.size());
-            System.out.println("\n=== QUICK STAGE OF SIMULATION SUMMARY ===\n");
-            // sortNurse.printQuickStats();
-            // registration.printQuickStats();
-            triage.printQuickStats();
-            eruZone.printQuickStats();
-            // redZone.printQuickStats();
-            // greenZone.printQuickStats();
-            // fastTrackZone.printQuickStats();
-        }
+        printQuickStats();
     }
 
     public void scheduleNextEDArrival(){
@@ -135,5 +110,32 @@ public class Simulator {
     public static void main(String[]args){
         Simulator sim = new Simulator();
         sim.begin();
+    }
+
+    public void printQuickStats() {
+        System.out.println("\n===DAY's SIMULATION SUMMARY ===");
+        System.out.println("ED Total arrivals: " + totalArrivals);
+        System.out.println("Total patients disposed by ED: " + edDisposedPatients.size());
+        double totalUnprocessedPatients = (
+            sortNurse.sortNQueue.size() + 
+            registration.regQueue.size() +
+            triage.triageQueue.size() + 
+            eruZone.zoneQueue.size() +
+            redZone.zoneQueue.size() +
+            greenZone.zoneQueue.size() +
+            fastTrackZone.zoneQueue.size());
+        System.out.println("Total unprocessed patients in ED: " + totalUnprocessedPatients);
+        System.out.println("ED Mean Door-to-Provider time: " + Statistics.calculateMean(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.DOOR_TO_PROVIDER_TIME));
+        System.out.println("ED Mean LOS time: " + Statistics.calculateMean(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.RESPONSE_TIME));
+        System.out.println("Last event time: " + currentTime);
+        System.out.println("Events unprocessed: "+ eventList.size());
+        System.out.println("\n=== QUICK STAGE OF SIMULATION SUMMARY ===\n");
+        // sortNurse.printQuickStats();
+        // registration.printQuickStats();
+        // triage.printQuickStats();
+        eruZone.printQuickStats();
+        redZone.printQuickStats();
+        greenZone.printQuickStats();
+        fastTrackZone.printQuickStats();
     }
 }

@@ -60,8 +60,8 @@ public class Zone extends ServiceStation {
         System.out.println("Total arrivals: " + totalArrivals);
         System.out.println("Total processed: " + departedPatients.size());
         System.out.println("Current Queue size[waiting]: " + queue.size());
-        System.out.println("Mean zone waiting time: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.ZONE, Statistics.Property.WAITING_TIME));
-        System.out.println("Mean zone service time: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.ZONE, Statistics.Property.SERVICE_TIME));
-        System.out.println("Mean zone LOS: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.ZONE, Statistics.Property.LOS));
+        System.out.println("Mean zone waiting time: " + Statistics.calculateMean(departedPatients, Statistics.Stage.ZONE, Statistics.Property.WAITING_TIME));
+        System.out.println("Mean zone service time: " + Statistics.calculateMean(departedPatients, Statistics.Stage.ZONE, Statistics.Property.PROCESSING_TIME));
+        System.out.println("Mean zone LOS: " + Statistics.calculateMean(departedPatients, Statistics.Stage.ZONE, Statistics.Property.RESPONSE_TIME));
     }
 }
