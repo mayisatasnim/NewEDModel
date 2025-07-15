@@ -54,34 +54,50 @@ public class Triage extends ServiceStation {
 
     private void sendToAppropriateDepartment(Event currentEvent) {
         // use bell curve to send patients to appropriate zones based on their acuity
-        String acuity = currentEvent.patient.acuity;
-        double zoneAssignmentAccuracy = Utils.getNormal(3.0, 1.0);
-        boolean isAccurate = zoneAssignmentAccuracy >= 2 && zoneAssignmentAccuracy <= 4;
+        int ESI = currentEvent.patient.ESILevel;
+
+        //assign zone based on acuity and esi
         Zone targetZone;
-        Zone fallbackZone;
+        if (ESI == 1) targetZone = eruZone;
+        else if (ESI == 2) targetZone = redZone;
+        else if (ESI == 3) targetZone = redZone;
+        else if (ESI == 4) targetZone = greenZone;
+        else targetZone = fastTrackZone;
 
-        switch (acuity) {
-            case "ERU":
-            targetZone = eruZone;
-            fallbackZone = redZone;
-            break;
-            case "RED":
-            targetZone = redZone;
-            fallbackZone = greenZone;
-            break;
-            case "GREEN":
-            targetZone = greenZone;
-            fallbackZone = fastTrackZone;
-            break;
-            default:
-            targetZone = fastTrackZone;
-            fallbackZone = null;
-        }
 
-        if (isAccurate || fallbackZone == null) {
-            targetZone.addPatient(currentEvent);
-        } else {
-            fallbackZone.addPatient(currentEvent);
-        }
+        targetZone.addPatient(currentEvent);
+
+
+
+//        double zoneAssignmentAccuracy = Utils.getNormal(3.0, 1.0);
+//        boolean isAccurate = zoneAssignmentAccuracy >= 2 && zoneAssignmentAccuracy <= 4;
+//        Zone targetZone;
+//        Zone fallbackZone;
+
+//        switch (acuity) {
+//            case "ERU":
+//            targetZone = eruZone;
+//            fallbackZone = redZone;
+//            break;
+//            case "RED":
+//            targetZone = redZone;
+//            fallbackZone = greenZone;
+//            break;
+//            case "GREEN":
+//            targetZone = greenZone;
+//            fallbackZone = fastTrackZone;
+//            break;
+//            default:
+//            targetZone = fastTrackZone;
+//            fallbackZone = null;
+//        }
+//
+//        if (isAccurate || fallbackZone == null) {
+//            targetZone.addPatient(currentEvent);
+//        } else {
+//            fallbackZone.addPatient(currentEvent);
+//        }
+
+
     }
 }
