@@ -8,7 +8,7 @@ public class Triage extends ServiceStation {
     private Zone greenZone;
     private Zone fastTrackZone;
 
-    public Triage(int queueCapacity, Zone eruZone, Zone redZone, Zone greenZone, Zone fastTrackZone, PriorityQueue<Event> eventList) {
+    public Triage(Zone eruZone, Zone redZone, Zone greenZone, Zone fastTrackZone, PriorityQueue<Event> eventList) {
         super("Triage", 10.0, 5.0, eventList);
         this.triageQueue = this.queue;
         this.triagedPatients = this.departedPatients;

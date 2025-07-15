@@ -31,9 +31,9 @@ public class Simulator {
         greenZone = new Zone(zoneName.GREEN, edDisposedPatients,eventList);
         redZone = new Zone(zoneName.RED, edDisposedPatients,eventList);
         fastTrackZone = new Zone(zoneName.FAST_TRACK, edDisposedPatients,eventList);
-        triage = new Triage(100, eruZone,redZone,greenZone, fastTrackZone, eventList);
-        registration = new Registration(100, triage, eventList);
-        sortNurse = new SortNurse(100,registration, eruZone, eventList);
+        triage = new Triage(eruZone,redZone,greenZone, fastTrackZone, eventList);
+        registration = new Registration(triage, eventList);
+        sortNurse = new SortNurse(registration, eruZone, eventList);
         configureServiceTimes();
         scheduleNextEDArrival();
     }
@@ -98,7 +98,7 @@ public class Simulator {
     }
 
     public void scheduleNextEDArrival(){
-        double interEDArrivalTime = Utils.getExp(10/60.0);
+        double interEDArrivalTime = Utils.getExp(arrivalRate);
         double nextEDArrivalTime = currentTime + interEDArrivalTime;
         Patient newPatient = new Patient(totalArrivals);
         eventList.add(new Event(nextEDArrivalTime,Event.EventType.edArrival, newPatient));

@@ -4,7 +4,7 @@ public class Registration extends ServiceStation {
     private Triage triage;
     public PriorityQueue<Patient> regQueue;
 
-    public Registration(int queueCapacity, Triage triage, PriorityQueue<Event> eventList) {
+    public Registration(Triage triage, PriorityQueue<Event> eventList) {
         super("Registration", 8.0, 3.0, eventList);
         this.triage = triage;
         this.regQueue = this.queue;
