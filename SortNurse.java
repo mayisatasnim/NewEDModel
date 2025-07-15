@@ -5,12 +5,9 @@ public class SortNurse {
 
     private Patient currentPatient;
     private double nextDepartureTime;
-    public double currentTime;
     private boolean isOccupied;
     private final double meanSortTime = 4.0;
     private final double sortStdDev = 1.0;
-
-    private boolean sendToERU;
     private Registration registration;
     public PriorityQueue<Patient> sortNQueue;
 
@@ -23,7 +20,6 @@ public class SortNurse {
         this.currentPatient = null;
         this.isOccupied = false;
         this.nextDepartureTime = Double.POSITIVE_INFINITY;
-        this.sendToERU = false;
         this.registration = registration;
         this.eventList = eventList;
         this.departedPatients = departedPatients;
@@ -46,7 +42,6 @@ public class SortNurse {
         double nextDepartureTime = currentTime + serviceTime;
         this.nextDepartureTime = nextDepartureTime;
         eventList.add(new Event(nextDepartureTime, Event.EventType.sortDeparture,patient));
-        patient.sortingDT = nextDepartureTime;
         isOccupied = true;
         if(debug == 1){ System.out.println("[SortNurse]: Next srtDT: " + nextDepartureTime);}
 
@@ -56,10 +51,11 @@ public class SortNurse {
         if(currentPatient != currentEvent.patient) {
             throw new IllegalStateException("[SortNurse-ERROR]: Got " + currentEvent.patient.id + " AT@ " +currentEvent.patient.sortingAT + " [!=] \n Expected " + currentPatient.id+ " AT@ " + currentPatient.sortingAT);
         }
-        System.out.println(currentEvent.patient.id + " DP_sort: " + currentTime);
-        currentEvent.patient.sortingDT = currentTime;
+        if(debug == 1) {System.out.println(currentEvent.patient.id + " DP_sort: " +currentEvent.eventTime);}
+        currentEvent.patient.sortingDT = currentEvent.eventTime;
         departedPatients.add(currentEvent.patient);
         isOccupied = false;
         currentPatient = null;
+        nextDepartureTime = Double.POSITIVE_INFINITY;
     }
 }
