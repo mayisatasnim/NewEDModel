@@ -4,25 +4,22 @@ public class SortNurse {
     private int debug = 1;
 
     private Patient currentPatient;
-    private double nextDepartureTime;
     private boolean isOccupied;
     private final double meanSortTime = 4.0;
     private final double sortStdDev = 1.0;
     private Registration registration;
     public PriorityQueue<Patient> sortNQueue;
-
+    public List<Patient> departedPatients;
     PriorityQueue<Event> eventList;
-    List<Patient> departedPatients;
 
 
-    public SortNurse(int queueCapacity, Registration registration, PriorityQueue<Event> eventList, List<Patient> departedPatients) {
+    public SortNurse(int queueCapacity, Registration registration, PriorityQueue<Event> eventList) {
         this.sortNQueue = new PriorityQueue<>(Comparator.comparingDouble(p -> p.ESILevel));
+        this.departedPatients = new ArrayList<Patient>();
         this.currentPatient = null;
         this.isOccupied = false;
-        this.nextDepartureTime = Double.POSITIVE_INFINITY;
         this.registration = registration;
         this.eventList = eventList;
-        this.departedPatients = departedPatients;
     }
 
     public void addPatient(Event currentEvent) {
@@ -32,6 +29,7 @@ public class SortNurse {
             System.out.println("[SortNurse]: Added " + currentEvent.patient.id + " to sortQueue @T: " + currentEvent.eventTime);
             if(!isOccupied){
                 Patient patientDepartingNext = sortNQueue.poll();
+                patientDepartingNext.sortingPT = currentEvent.eventTime;
                 currentPatient = patientDepartingNext;
                 scheduleNextDeparture(currentEvent.eventTime,patientDepartingNext);
             }
@@ -39,8 +37,7 @@ public class SortNurse {
 
     public void scheduleNextDeparture(double currentTime, Patient patient){
         double serviceTime= Utils.getNormal(meanSortTime,sortStdDev);
-        double nextDepartureTime = currentTime + serviceTime;
-        this.nextDepartureTime = nextDepartureTime;
+        double nextDepartureTime = currentTime + serviceTime;        
         eventList.add(new Event(nextDepartureTime, Event.EventType.sortDeparture,patient));
         isOccupied = true;
         if(debug == 1){ System.out.println("[SortNurse]: Next srtDT: " + nextDepartureTime);}
@@ -56,6 +53,14 @@ public class SortNurse {
         departedPatients.add(currentEvent.patient);
         isOccupied = false;
         currentPatient = null;
-        nextDepartureTime = Double.POSITIVE_INFINITY;
+    }
+
+    public void printQuickStats() {
+        System.out.println("\n[SortNurse]: Quick Stats");
+        System.out.println("Total patients sorted: " + departedPatients.size());
+        System.out.println("Current sortNQueue size[if end of day indicates unprocessed patients]: " + sortNQueue.size());
+        System.out.println("Mean sortNurse waiting time: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.SORTING, Statistics.Property.WAITING_TIME));
+        System.out.println("Mean sortNurse service time: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.SORTING, Statistics.Property.SERVICE_TIME));
+        System.out.println("Mean sortNurse LOS: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.SORTING, Statistics.Property.LOS));
     }
 }

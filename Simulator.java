@@ -1,6 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class Simulator {
     int debug = 1;
@@ -11,17 +9,15 @@ public class Simulator {
     int totalArrivals = 0;
     SortNurse sortNurse;
     Registration registration;
-    List<Patient> departedPatients; 
     //event calendar
     PriorityQueue<Event> eventList;
 
 
 
     public Simulator(){
-        departedPatients = new ArrayList<Patient>();
         eventList = new PriorityQueue<Event>();
         registration = new Registration();
-        sortNurse = new SortNurse(50,registration,eventList,departedPatients);
+        sortNurse = new SortNurse(50,registration,eventList);
 
         //schedule first arrival
         scheduleNextEDArrival();
@@ -51,10 +47,9 @@ public class Simulator {
         if(debug == 1) {
             System.out.println("\n===Day's SIMULATION SUMMARY ===");
             System.out.println("Total arrivals: " + totalArrivals);
-            System.out.println("Total disposed: " + departedPatients.size());
-            System.out.println("Total sortQueue overhead: " + sortNurse.sortNQueue.size());
             System.out.println("Last event time: " + currentTime);
-            System.out.println("Events overhead: "+ eventList.size());
+            System.out.println("Events unprocessed: "+ eventList.size());
+            sortNurse.printQuickStats();
         }
     }
 
@@ -67,8 +62,6 @@ public class Simulator {
         if (debug == 1) {
             System.out.println("\n[Simulator]: Next ED-AT: " + nextEDArrivalTime+"\n");
         }
-
-
     }
     public static void main(String[]args){
         Simulator sim = new Simulator();
