@@ -34,9 +34,18 @@ public class Simulator {
         triage = new Triage(100, eruZone,redZone,greenZone, fastTrackZone, eventList);
         registration = new Registration(100, triage, eventList);
         sortNurse = new SortNurse(100,registration, eruZone, eventList);
-
-        //schedule first arrival
+        configureServiceTimes();
         scheduleNextEDArrival();
+    }
+
+    public void configureServiceTimes() {
+        sortNurse.setServiceTime(0, 0);
+        registration.setServiceTime(0, 0);
+        triage.setServiceTime(10.0, 5.0);
+        eruZone.setServiceTime(4.0, 1.0);
+        redZone.setServiceTime(4.0, 1.0);
+        greenZone.setServiceTime(4.0, 1.0);
+        fastTrackZone.setServiceTime(4.0, 1.0);
     }
 
     public void begin(){
@@ -105,8 +114,8 @@ public class Simulator {
             System.out.println("\n=== QUICK STAGE OF SIMULATION SUMMARY ===\n");
             // sortNurse.printQuickStats();
             // registration.printQuickStats();
-            // triage.printQuickStats();
-            // eruZone.printQuickStats();
+            triage.printQuickStats();
+            eruZone.printQuickStats();
             // redZone.printQuickStats();
             // greenZone.printQuickStats();
             // fastTrackZone.printQuickStats();

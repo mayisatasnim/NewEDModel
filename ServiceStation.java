@@ -6,6 +6,7 @@ public abstract class ServiceStation {
     protected boolean isOccupied;
     protected double meanServiceTime;
     protected double serviceStdDev;
+    protected int totalArrivals;
     protected PriorityQueue<Patient> queue;
     protected List<Patient> departedPatients;
     protected PriorityQueue<Event> eventList;
@@ -20,10 +21,12 @@ public abstract class ServiceStation {
         this.currentPatient = null;
         this.isOccupied = false;
         this.eventList = eventList;
+        this.totalArrivals = 0;
     }
 
     public void addPatient(Event currentEvent) {
         queue.add(currentEvent.patient);
+        totalArrivals++;
         setPatientArrivalTime(currentEvent.patient, currentEvent.eventTime);
         setPatientDepartureTime(currentEvent.patient, Double.POSITIVE_INFINITY);
         System.out.println("[" + stationName + "]: Added " + currentEvent.patient.id + " to queue @T: " + currentEvent.eventTime);
@@ -63,11 +66,17 @@ public abstract class ServiceStation {
 
     public void printQuickStats() {
         System.out.println("\n[" + stationName + "]: Quick Stats");
-        System.out.println("Total patients processed: " + departedPatients.size());
-        System.out.println("Current queue size: " + queue.size());
+        System.out.println("Total arrived: " + totalArrivals);
+        System.out.println("Total processed: " + departedPatients.size());
+        System.out.println("Current Queue size[waiting]: " + queue.size());
         System.out.println("Mean " + stationName.toLowerCase() + " waiting time: " + Statistics.calculateAverage(departedPatients, getStatisticsStage(), Statistics.Property.WAITING_TIME));
         System.out.println("Mean " + stationName.toLowerCase() + " service time: " + Statistics.calculateAverage(departedPatients, getStatisticsStage(), Statistics.Property.SERVICE_TIME));
         System.out.println("Mean " + stationName.toLowerCase() + " LOS: " + Statistics.calculateAverage(departedPatients, getStatisticsStage(), Statistics.Property.LOS));
+    }
+
+    public void setServiceTime(double meanServiceTime, double serviceStdDev) {
+        this.meanServiceTime = meanServiceTime;
+        this.serviceStdDev = serviceStdDev;
     }
 
     protected abstract void setPatientArrivalTime(Patient patient, double time);

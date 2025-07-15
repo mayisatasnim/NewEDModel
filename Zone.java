@@ -57,8 +57,9 @@ public class Zone extends ServiceStation {
     @Override
     public void printQuickStats() {
         System.out.println("\n[Zone-" + zoneName + "]: Quick Stats");
-        System.out.println("Total patients processed: " + departedPatients.size());
-        System.out.println("Current zoneQueue size: " + queue.size());
+        System.out.println("Total arrivals: " + totalArrivals);
+        System.out.println("Total processed: " + departedPatients.size());
+        System.out.println("Current Queue size[waiting]: " + queue.size());
         System.out.println("Mean zone waiting time: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.ZONE, Statistics.Property.WAITING_TIME));
         System.out.println("Mean zone service time: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.ZONE, Statistics.Property.SERVICE_TIME));
         System.out.println("Mean zone LOS: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.ZONE, Statistics.Property.LOS));
