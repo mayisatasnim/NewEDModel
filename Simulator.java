@@ -2,22 +2,38 @@ import java.util.*;
 
 public class Simulator {
     int debug = 1;
+    int totalArrivals = 0;
     double arrivalRate = 10 / 60.0;
     double currentTime = 0;
     double dayEnds = 24 * 60;
     double nextArrivalTime = 0;
-    int totalArrivals = 0;
-    SortNurse sortNurse;
-    Registration registration;
     //event calendar
     PriorityQueue<Event> eventList;
-
-
+    List<Patient> edDisposedPatients;
+    Registration registration;
+    SortNurse sortNurse;
+    Triage triage;
+    Zone fastTrackZone;
+    Zone eruZone;
+    Zone redZone;
+    Zone greenZone;
+    enum zoneName{
+        FAST_TRACK,
+        ERU,
+        RED,
+        GREEN
+    }
 
     public Simulator(){
+        edDisposedPatients = new ArrayList<Patient>();
         eventList = new PriorityQueue<Event>();
-        registration = new Registration();
-        sortNurse = new SortNurse(50,registration,eventList);
+        eruZone = new Zone(zoneName.ERU,40, edDisposedPatients,eventList);
+        greenZone = new Zone(zoneName.GREEN,40, edDisposedPatients,eventList);
+        redZone = new Zone(zoneName.RED,40, edDisposedPatients,eventList);
+        fastTrackZone = new Zone(zoneName.FAST_TRACK,40, edDisposedPatients,eventList);
+        triage = new Triage(100, eruZone,redZone,greenZone, fastTrackZone, eventList);
+        registration = new Registration(100, triage, eventList);
+        sortNurse = new SortNurse(100,registration, eruZone, eventList);
 
         //schedule first arrival
         scheduleNextEDArrival();
@@ -37,19 +53,62 @@ public class Simulator {
                     case sortDeparture:
                         sortNurse.departSortingNurse(currentEvent);
                         break;
+                    case registerDeparture:
+                        registration.departRegistration(currentEvent);
+                        break;
+                    case triageDeparture:
+                        triage.departTriage(currentEvent);
+                        break;
+                    case zoneDeparture:
+                        switch (currentEvent.patient.zoneName) {
+                            case ERU:
+                                eruZone.departZone(currentEvent);
+                                break;
+                            case RED:
+                                redZone.departZone(currentEvent);
+                                break;
+                            case GREEN:
+                                greenZone.departZone(currentEvent);
+                                break;
+                            case FAST_TRACK:
+                                fastTrackZone.departZone(currentEvent);
+                                break;
+                            default:
+                                System.out.println("[Simulator-ERROR]: Unknown zone");
+                                break;
+                        }
                     default:
-                        System.out.println("unknown event");
+                        System.out.println("[Simulator-ERROR]: unknown event");
                 }
             }
         }
         
         // some statistics
         if(debug == 1) {
-            System.out.println("\n===Day's SIMULATION SUMMARY ===");
-            System.out.println("Total arrivals: " + totalArrivals);
+            System.out.println("\n===DAY's SIMULATION SUMMARY ===");
+            System.out.println("ED Total arrivals: " + totalArrivals);
+            System.out.println("Total patients disposed by ED: " + edDisposedPatients.size());
+            double totalUnprocessedPatients = (
+                sortNurse.sortNQueue.size() + 
+                registration.regQueue.size() +
+                triage.triageQueue.size() + 
+                eruZone.zoneQueue.size() +
+                redZone.zoneQueue.size() +
+                greenZone.zoneQueue.size() +
+                fastTrackZone.zoneQueue.size());
+            System.out.println("Total unprocessed patients in ED: " + totalUnprocessedPatients);
+            System.out.println("ED Mean Door-to-Provider time: " + Statistics.calculateAverage(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.DOOR_TO_PROVIDER_TIME));
+            System.out.println("ED Mean LOS time: " + Statistics.calculateAverage(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.LOS));
             System.out.println("Last event time: " + currentTime);
             System.out.println("Events unprocessed: "+ eventList.size());
+            System.out.println("\n=== QUICK STAGE OF SIMULATION SUMMARY ===\n");
             sortNurse.printQuickStats();
+            // registration.printQuickStats();
+            // triage.printQuickStats();
+            // eruZone.printQuickStats();
+            // redZone.printQuickStats();
+            // greenZone.printQuickStats();
+            // fastTrackZone.printQuickStats();
         }
     }
 

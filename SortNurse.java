@@ -5,20 +5,22 @@ public class SortNurse {
 
     private Patient currentPatient;
     private boolean isOccupied;
-    private final double meanSortTime = 4.0;
+    private final double meanSortTime = 10.0;
     private final double sortStdDev = 1.0;
     private Registration registration;
     public PriorityQueue<Patient> sortNQueue;
     public List<Patient> departedPatients;
     PriorityQueue<Event> eventList;
+    Zone eruZone;
 
 
-    public SortNurse(int queueCapacity, Registration registration, PriorityQueue<Event> eventList) {
+    public SortNurse(int queueCapacity, Registration registration, Zone eruZone, PriorityQueue<Event> eventList) {
         this.sortNQueue = new PriorityQueue<>(Comparator.comparingDouble(p -> p.ESILevel));
         this.departedPatients = new ArrayList<Patient>();
         this.currentPatient = null;
         this.isOccupied = false;
         this.registration = registration;
+        this.eruZone = eruZone;
         this.eventList = eventList;
     }
 
@@ -49,8 +51,10 @@ public class SortNurse {
             throw new IllegalStateException("[SortNurse-ERROR]: Got " + currentEvent.patient.id + " AT@ " +currentEvent.patient.sortingAT + " [!=] \n Expected " + currentPatient.id+ " AT@ " + currentPatient.sortingAT);
         }
         if(debug == 1) {System.out.println(currentEvent.patient.id + " DP_sort: " +currentEvent.eventTime);}
-        currentEvent.patient.sortingDT = currentEvent.eventTime;
-        departedPatients.add(currentEvent.patient);
+        // process departure
+        sendToAppropriateDepartment(currentEvent);
+        currentPatient.sortingDT = currentEvent.eventTime;
+        departedPatients.add(currentPatient);
         isOccupied = false;
         currentPatient = null;
     }
@@ -62,5 +66,18 @@ public class SortNurse {
         System.out.println("Mean sortNurse waiting time: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.SORTING, Statistics.Property.WAITING_TIME));
         System.out.println("Mean sortNurse service time: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.SORTING, Statistics.Property.SERVICE_TIME));
         System.out.println("Mean sortNurse LOS: " + Statistics.calculateAverage(departedPatients, Statistics.Stage.SORTING, Statistics.Property.LOS));
+    }
+
+    public void sendToAppropriateDepartment(Event currentEvent) {
+        double esi = currentEvent.patient.ESILevel;
+        double rand = Math.random();
+
+        if (esi == 1 && rand < 0.95) {
+            eruZone.addPatient(currentEvent);
+        } else if (esi == 2 && rand < 0.10) {
+            eruZone.addPatient(currentEvent);
+        } else {
+            registration.addPatient(currentEvent);
+        }
     }
 }

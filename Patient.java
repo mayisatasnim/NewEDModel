@@ -27,6 +27,9 @@ public class Patient {
     public double zonePT;
     public double zoneDT;
 
+    // destination zone
+    public Simulator.zoneName zoneName;
+
     public Patient(int regNo) {
         // Initialize all fields
         this.id = "P_" + regNo; 

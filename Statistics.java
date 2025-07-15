@@ -11,7 +11,8 @@ public class Statistics {
     enum Property {
         WAITING_TIME,
         SERVICE_TIME,
-        LOS
+        LOS,
+        DOOR_TO_PROVIDER_TIME
     }
     public static double calculateAverage(List<Patient> patients, Stage stage,Property property) {
         double sum = 0.0;
@@ -81,13 +82,11 @@ public class Statistics {
                     break;
                 case ED:
                     switch (property) {
-                        case WAITING_TIME:
-                            value = p.zonePT - p.sortingAT;
-                            break;
-                        case SERVICE_TIME:
-                            throw new IllegalArgumentException("Service time not applicable for ED stage");
                         case LOS:
                             value = p.zoneDT - p.sortingAT;
+                            break;
+                        case DOOR_TO_PROVIDER_TIME:
+                            value = p.zonePT - p.sortingAT;
                             break;
                         default:
                             throw new IllegalArgumentException("Unknown property for ED stage");
