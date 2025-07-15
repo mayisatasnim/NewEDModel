@@ -49,7 +49,7 @@ public class Triage extends ServiceStation {
     }
 
     public void departTriage(Event currentEvent) {
-        departPatient(currentEvent);
+        departServiceStation(currentEvent);
     }
 
     private void sendToAppropriateDepartment(Event currentEvent) {

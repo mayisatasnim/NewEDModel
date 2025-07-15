@@ -6,7 +6,7 @@ public class Zone extends ServiceStation {
     private List<Patient> edDisposedPatients;
     private Simulator.zoneName zoneName;
 
-    public Zone(Simulator.zoneName zoneName, int queueCapacity, List<Patient> edDisposedPatients, PriorityQueue<Event> eventList) {
+    public Zone(Simulator.zoneName zoneName,List<Patient> edDisposedPatients, PriorityQueue<Event> eventList) {
         super("Zone", 4.0, 1.0, eventList);
         this.zoneName = zoneName;
         this.zoneQueue = this.queue;
@@ -51,7 +51,7 @@ public class Zone extends ServiceStation {
     }
 
     public void departZone(Event currentEvent) {
-        departPatient(currentEvent);
+        departServiceStation(currentEvent);
     }
 
     @Override

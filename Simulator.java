@@ -27,10 +27,10 @@ public class Simulator {
     public Simulator(){
         edDisposedPatients = new ArrayList<Patient>();
         eventList = new PriorityQueue<Event>();
-        eruZone = new Zone(zoneName.ERU,40, edDisposedPatients,eventList);
-        greenZone = new Zone(zoneName.GREEN,40, edDisposedPatients,eventList);
-        redZone = new Zone(zoneName.RED,40, edDisposedPatients,eventList);
-        fastTrackZone = new Zone(zoneName.FAST_TRACK,40, edDisposedPatients,eventList);
+        eruZone = new Zone(zoneName.ERU, edDisposedPatients,eventList);
+        greenZone = new Zone(zoneName.GREEN, edDisposedPatients,eventList);
+        redZone = new Zone(zoneName.RED, edDisposedPatients,eventList);
+        fastTrackZone = new Zone(zoneName.FAST_TRACK, edDisposedPatients,eventList);
         triage = new Triage(100, eruZone,redZone,greenZone, fastTrackZone, eventList);
         registration = new Registration(100, triage, eventList);
         sortNurse = new SortNurse(100,registration, eruZone, eventList);

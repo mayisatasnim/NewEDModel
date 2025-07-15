@@ -56,7 +56,7 @@ public abstract class ServiceStation extends Metrics {
         }
     }
 
-    public void departPatient(Event currentEvent) {
+    public void departServiceStation(Event currentEvent) {
         if (currentPatient != currentEvent.patient) {
             throw new IllegalStateException("[" + stationName + "-ERROR]: Got " + currentEvent.patient.id + " [!=] Expected " + currentPatient.id);
         }

@@ -43,7 +43,7 @@ public class SortNurse extends ServiceStation {
     }
 
     public void departSortingNurse(Event currentEvent) {
-        departPatient(currentEvent);
+        departServiceStation(currentEvent);
     }
 
     public void sendToAppropriateDepartment(Event currentEvent) {

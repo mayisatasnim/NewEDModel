@@ -41,6 +41,6 @@ public class Registration extends ServiceStation {
     }
 
     public void departRegistration(Event currentEvent) {
-        departPatient(currentEvent);
+        departServiceStation(currentEvent);
     }
 }
