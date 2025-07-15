@@ -1,0 +1,68 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Eclipse files
+*.launch
+.settings/
+bin/
+tmp/
+*.swp
+
+# IntelliJ IDEA files
+*.iml
+*.ipr
+*.iws
+.idea/
+out/
+
+# NetBeans files
+nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code files
+.vscode/
+
+# Mac OS files
+.DS_Store
+
+# Gradle files
+.gradle/
+build/
+
+# Maven files
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Other
+*.class
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo

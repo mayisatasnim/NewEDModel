@@ -1,4 +1,4 @@
-import java.util.PriorityQueue;
+import java.util.*;
 
 public class SortNurse {
     private int debug = 1;
@@ -12,63 +12,54 @@ public class SortNurse {
 
     private boolean sendToERU;
     private Registration registration;
-    private final QueueManager queueManager;
+    public PriorityQueue<Patient> sortNQueue;
 
     PriorityQueue<Event> eventList;
+    List<Patient> departedPatients;
 
 
-    public SortNurse(int queueCapacity, Registration registration, PriorityQueue eventList) {
-        this.queueManager = new QueueManager(queueCapacity, QueueManager.Stage.Sort);
+    public SortNurse(int queueCapacity, Registration registration, PriorityQueue<Event> eventList, List<Patient> departedPatients) {
+        this.sortNQueue = new PriorityQueue<>(Comparator.comparingDouble(p -> p.ESILevel));
         this.currentPatient = null;
         this.isOccupied = false;
         this.nextDepartureTime = Double.POSITIVE_INFINITY;
         this.sendToERU = false;
         this.registration = registration;
-
         this.eventList = eventList;
+        this.departedPatients = departedPatients;
     }
 
     public void addPatient(Event currentEvent) {
-           // currentEvent.patient.setAcuity(currentEvent.patient.level);
-            if(debug == 1){ System.out.println("[SortNurse]: Adding patient to Sort Queue");}
-            queueManager.add(currentEvent.patient, currentEvent.eventTime);
-            if(!queueManager.isEmpty() && !isOccupied){
-
-                Patient patientDepartingNext = queueManager.pop();
+            sortNQueue.add(currentEvent.patient);
+            currentEvent.patient.sortingAT = currentEvent.eventTime;
+            currentEvent.patient.sortingDT = Double.POSITIVE_INFINITY;
+            System.out.println("[SortNurse]: Added " + currentEvent.patient.id + " to sortQueue @T: " + currentEvent.eventTime);
+            if(!isOccupied){
+                Patient patientDepartingNext = sortNQueue.poll();
+                currentPatient = patientDepartingNext;
                 scheduleNextDeparture(currentEvent.eventTime,patientDepartingNext);
-
             }
     }
 
-    public void update(){
-
-    }
-
     public void scheduleNextDeparture(double currentTime, Patient patient){
-        double servicetime= Utils.getNormal(4,1);
-        double nextDepartureTime = currentTime + servicetime;
+        double serviceTime= Utils.getNormal(meanSortTime,sortStdDev);
+        double nextDepartureTime = currentTime + serviceTime;
         this.nextDepartureTime = nextDepartureTime;
         eventList.add(new Event(nextDepartureTime, Event.EventType.sortDeparture,patient));
         patient.sortingDT = nextDepartureTime;
         isOccupied = true;
-        if(debug == 1){ System.out.println("[SortNurse]: Next departure time set for" + nextDepartureTime);}
+        if(debug == 1){ System.out.println("[SortNurse]: Next srtDT: " + nextDepartureTime);}
 
     }
 
-    public void departSortingNurse(){
-        isOccupied = false;
-    }
-
-
-    private boolean checkLWBS(Patient p, double time) {
-        if (p.hasLWBS && time >= p.LWBSTime) {
-            if (debug == 1) {
-                System.out.println("[SortNurse] Patient LWBS at time " + time + ", removing from queue");
-            }
-            queueManager.remove(p);
-            return true;
+    public void departSortingNurse(Event currentEvent) {
+        if(currentPatient != currentEvent.patient) {
+            throw new IllegalStateException("[SortNurse-ERROR]: Got " + currentEvent.patient.id + " AT@ " +currentEvent.patient.sortingAT + " [!=] \n Expected " + currentPatient.id+ " AT@ " + currentPatient.sortingAT);
         }
-        return false;
+        System.out.println(currentEvent.patient.id + " DP_sort: " + currentTime);
+        currentEvent.patient.sortingDT = currentTime;
+        departedPatients.add(currentEvent.patient);
+        isOccupied = false;
+        currentPatient = null;
     }
-
 }
