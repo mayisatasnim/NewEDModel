@@ -53,16 +53,35 @@ public class Triage extends ServiceStation {
     }
 
     private void sendToAppropriateDepartment(Event currentEvent) {
+        // use bell curve to send patients to appropriate zones based on their acuity
         String acuity = currentEvent.patient.acuity;
-        double rand = Math.random();
-        if (acuity.equals("High")) {
-            eruZone.addPatient(currentEvent);
-        } else if (acuity.equals("Medium")) {
-            redZone.addPatient(currentEvent);
-        } else if (acuity.equals("Low") && rand > 0.75) {
-            greenZone.addPatient(currentEvent);
+        double zoneAssignmentAccuracy = Utils.getNormal(3.0, 1.0);
+        boolean isAccurate = zoneAssignmentAccuracy >= 2 && zoneAssignmentAccuracy <= 4;
+        Zone targetZone;
+        Zone fallbackZone;
+
+        switch (acuity) {
+            case "ERU":
+            targetZone = eruZone;
+            fallbackZone = redZone;
+            break;
+            case "RED":
+            targetZone = redZone;
+            fallbackZone = greenZone;
+            break;
+            case "GREEN":
+            targetZone = greenZone;
+            fallbackZone = fastTrackZone;
+            break;
+            default:
+            targetZone = fastTrackZone;
+            fallbackZone = null;
+        }
+
+        if (isAccurate || fallbackZone == null) {
+            targetZone.addPatient(currentEvent);
         } else {
-            fastTrackZone.addPatient(currentEvent);
+            fallbackZone.addPatient(currentEvent);
         }
     }
 }
