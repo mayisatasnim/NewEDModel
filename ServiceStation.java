@@ -2,8 +2,13 @@ import java.util.*;
 
 public abstract class ServiceStation extends Metrics {
     protected int debug = 0;
-    protected Patient currentPatient;
-    protected boolean isOccupied;
+    //protected Patient currentPatient;
+    //protected boolean isOccupied;
+
+    //change for multiple bed support in zones
+    protected int numBeds; //servers
+    protected int busyBeds = 0; //beds in use
+
     protected double meanServiceTime;
     protected double serviceStdDev;
     protected PriorityQueue<Patient> queue;
@@ -13,14 +18,22 @@ public abstract class ServiceStation extends Metrics {
     protected String stationName;
 
 
-    public ServiceStation(String stationName, double meanServiceTime, double serviceStdDev, PriorityQueue<Event> eventList) {
+    public ServiceStation(String stationName, double meanServiceTime, double serviceStdDev, int numBeds, PriorityQueue<Event> eventList) {
         super(stationName);
         this.stationName = stationName;
         setServiceTime(meanServiceTime, serviceStdDev);
+
+        //for multiple bed support
+        this.numBeds = numBeds;
+        this.busyBeds = 0;
+
+
         this.queue = new PriorityQueue<>(Comparator.comparingDouble(p -> p.ESILevel));
         this.departedPatients = new ArrayList<>();
-        this.currentPatient = null;
-        this.isOccupied = false;
+        //  this.currentPatient = null;
+        //  this.isOccupied = false;
+
+        this.arrivedPatients = new ArrayList<>();
         this.eventList = eventList;
     }
 
@@ -38,37 +51,64 @@ public abstract class ServiceStation extends Metrics {
             System.out.println("[" + stationName + "]: Added " + currentEvent.patient.id + " to queue @T: " + currentEvent.eventTime);
         }
 
-        if (!isOccupied) {
+//        if (!isOccupied) {
+//            Patient patientDepartingNext = queue.poll();
+//            setPatientProcessingTime(patientDepartingNext, currentEvent.eventTime);
+//            currentPatient = patientDepartingNext;
+//            scheduleNextDeparture(currentEvent.eventTime, patientDepartingNext);
+//        }
+
+        while (busyBeds < numBeds && !queue.isEmpty()) {
             Patient patientDepartingNext = queue.poll();
             setPatientProcessingTime(patientDepartingNext, currentEvent.eventTime);
-            currentPatient = patientDepartingNext;
             scheduleNextDeparture(currentEvent.eventTime, patientDepartingNext);
+            busyBeds++;
         }
+
     }
 
     protected void scheduleNextDeparture(double currentTime, Patient patient) {
         double serviceTime = Utils.getNormal(meanServiceTime, serviceStdDev);
         double nextDepartureTime = currentTime + serviceTime;
         eventList.add(new Event(nextDepartureTime, getDepartureEventType(), patient));
-        isOccupied = true;
+  //      isOccupied = true;
         if (debug == 1) {
             System.out.println("[" + stationName + "]: Next departure: " + nextDepartureTime);
         }
     }
 
     public void departServiceStation(Event currentEvent) {
-        if (currentPatient != currentEvent.patient) {
-            throw new IllegalStateException("[" + stationName + "-ERROR]: Got " + currentEvent.patient.id + " [!=] Expected " + currentPatient.id);
-        }
+//        if (currentPatient != currentEvent.patient) {
+//            throw new IllegalStateException("[" + stationName + "-ERROR]: Got " + currentEvent.patient.id + " [!=] Expected " + currentPatient.id);
+//        }
+//        if (debug == 1) {
+//            System.out.println(currentEvent.patient.id + " DP_" + stationName.toLowerCase() + ": " + currentEvent.eventTime);
+//        }
+//
+//        processPatientDeparture(currentEvent);
+//        setPatientDepartureTime(currentPatient, currentEvent.eventTime);
+//        departedPatients.add(currentPatient);
+//        isOccupied = false;
+//        currentPatient = null;
+
         if (debug == 1) {
             System.out.println(currentEvent.patient.id + " DP_" + stationName.toLowerCase() + ": " + currentEvent.eventTime);
         }
-        
+
         processPatientDeparture(currentEvent);
-        setPatientDepartureTime(currentPatient, currentEvent.eventTime);
-        departedPatients.add(currentPatient);
-        isOccupied = false;
-        currentPatient = null;
+        setPatientDepartureTime(currentEvent.patient, currentEvent.eventTime);
+        departedPatients.add(currentEvent.patient);
+        busyBeds--;
+
+        // Try to start service for another patient if queue isn't empty
+        if (!queue.isEmpty()) {
+            Patient nextPatient = queue.poll();
+            setPatientProcessingTime(nextPatient, currentEvent.eventTime);
+            scheduleNextDeparture(currentEvent.eventTime, nextPatient);
+            busyBeds++;
+        }
+
+
     }
 
     public void printQuickStats() {

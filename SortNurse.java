@@ -6,7 +6,7 @@ public class SortNurse extends ServiceStation {
     public PriorityQueue<Patient> sortNQueue;
 
     public SortNurse(Registration registration, Zone eruZone, PriorityQueue<Event> eventList) {
-        super("SortNurse", 10.0, 1.0, eventList);
+        super("SortNurse", 10.0, 1.0, 1, eventList);
         this.registration = registration;
         this.eruZone = eruZone;
         this.sortNQueue = this.queue;

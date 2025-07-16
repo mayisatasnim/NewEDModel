@@ -6,13 +6,24 @@ public class Zone extends ServiceStation {
     private List<Patient> edDisposedPatients;
     private Simulator.zoneName zoneName;
 
-    public Zone(Simulator.zoneName zoneName,List<Patient> edDisposedPatients, PriorityQueue<Event> eventList) {
-        super("Zone", 4.0, 1.0, eventList);
+    public Zone(Simulator.zoneName zoneName, int numBeds, List<Patient> edDisposedPatients, PriorityQueue<Event> eventList) {
+        super("Zone-" + zoneName, 4.0, 1.0, getZoneCapacity(zoneName), eventList);
         this.zoneName = zoneName;
         this.zoneQueue = this.queue;
         this.zoneDepartedPatients = this.departedPatients;
         this.edDisposedPatients = edDisposedPatients;
     }
+
+    private static int getZoneCapacity(Simulator.zoneName zoneName) {
+        switch (zoneName) {
+            case ERU: return 14;
+            case FAST_TRACK: return 43;
+            case RED: return 29;
+            case GREEN: return 32;
+            default: return 1;
+        }
+    }
+
 
     @Override
     protected void setPatientArrivalTime(Patient patient, double time) {
