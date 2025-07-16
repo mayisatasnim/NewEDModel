@@ -132,6 +132,8 @@ public abstract class ServiceStation extends Metrics {
         totalProcessed = departedPatients.size(); // (X) - Throughput
         currentQueueSize = queue.size(); // (NQ) - Current Queue Size
         realServiceRate = 1.0 / realMeanServiceTime;
+
+        realArrivalRate = 1.0 / realMeanInterArrivalTime;
         utilization = realArrivalRate / realServiceRate; // Utilization (ρ) = λ / μ
     }
 

@@ -6,7 +6,7 @@ public class Zone extends ServiceStation {
     private List<Patient> edDisposedPatients;
     private Simulator.zoneName zoneName;
 
-    public Zone(Simulator.zoneName zoneName, int numBeds, List<Patient> edDisposedPatients, PriorityQueue<Event> eventList) {
+    public Zone(Simulator.zoneName zoneName, List<Patient> edDisposedPatients, PriorityQueue<Event> eventList) {
         super("Zone-" + zoneName, 4.0, 1.0, getZoneCapacity(zoneName), eventList);
         this.zoneName = zoneName;
         this.zoneQueue = this.queue;

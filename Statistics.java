@@ -108,6 +108,8 @@ public abstract class Statistics extends Metrics{
         return count > 0 ? sum / count : 0.0;
     }
     public static double totalInterArrivalTime(List<Patient> patients, Stage stage) {
+        if (patients == null || patients.size() <= 1) return 0.0;
+
         double sum = 0.0;
         int count = 0;
         switch (stage) {
