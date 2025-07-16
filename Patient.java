@@ -11,7 +11,12 @@ public class Patient {
     //lwbs
     public boolean hasLWBS;
     public double LWBSProbability;
-    public double LWBSTime;          
+    public double LWBSTime;
+
+    //death
+    public boolean died;
+    public double deathTime;
+    public boolean isCountedDisposed;
 
     // Station timing
     public double sortingAT;
@@ -40,6 +45,10 @@ public class Patient {
         this.hasLWBS = false;
         this.LWBSProbability = 0.0;
         this.LWBSTime = 0.0;
+        this.died = false;
+        this.deathTime = -1;
+        this.isCountedDisposed = false;
+
         if(debug) {
             printDebugInfo();
         }

@@ -36,6 +36,11 @@ public class Registration extends ServiceStation {
     }
 
     @Override
+    protected double getPatientArrivalTime(Patient patient) {
+        return patient.registrationAT;
+    }
+
+    @Override
     protected Statistics.Stage getStatisticsStage() {
         return Statistics.Stage.REGISTRATION;
     }

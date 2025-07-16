@@ -22,6 +22,9 @@ public abstract class Statistics extends Metrics{
         double sum = 0.0;
         int count = 0;
         for (Patient p : patients) {
+            //skip patients that lwbs and death
+            if (p.hasLWBS || p.died) continue;
+
             double value = 0.0;
             if(property == Property.INTER_ARRIVAL_TIME) {
                 return totalInterArrivalTime(patients, stage) / patients.size();
@@ -147,4 +150,23 @@ public abstract class Statistics extends Metrics{
         }
         return count > 0 ? sum / count : 0.0;
     }
+
+    public static int countDeaths(List<Patient> patients) {
+        int deaths = 0;
+        for (Patient p : patients) {
+            if (p.died) {
+                deaths++;
+            }
+        }
+        return deaths;
+    }
+
+    public static int countLWBS(List<Patient> patients) {
+        int count = 0;
+        for (Patient p : patients) {
+            if (p.hasLWBS) count++;
+        }
+        return count;
+    }
+
 }

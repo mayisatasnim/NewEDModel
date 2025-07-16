@@ -2,12 +2,13 @@ import java.util.*;
 
 public abstract class ServiceStation extends Metrics {
     protected int debug = 0;
-    //protected Patient currentPatient;
-    //protected boolean isOccupied;
 
     //change for multiple bed support in zones
     protected int numBeds; //servers
     protected int busyBeds = 0; //beds in use
+
+    protected int staffAvailable;
+    protected int busyStaff = 0;
 
     protected double meanServiceTime;
     protected double serviceStdDev;
@@ -30,9 +31,6 @@ public abstract class ServiceStation extends Metrics {
 
         this.queue = new PriorityQueue<>(Comparator.comparingDouble(p -> p.ESILevel));
         this.departedPatients = new ArrayList<>();
-        //  this.currentPatient = null;
-        //  this.isOccupied = false;
-
         this.arrivedPatients = new ArrayList<>();
         this.eventList = eventList;
     }
@@ -43,25 +41,24 @@ public abstract class ServiceStation extends Metrics {
     }
 
     public void addPatient(Event currentEvent) {
-        queue.add(currentEvent.patient);
+        Patient patient = currentEvent.patient;
+        queue.add(patient);
         totalArrivals++;
-        setPatientArrivalTime(currentEvent.patient, currentEvent.eventTime);
-        setPatientDepartureTime(currentEvent.patient, Double.POSITIVE_INFINITY);
+        setPatientArrivalTime(patient, currentEvent.eventTime);
+        setPatientDepartureTime(patient, Double.POSITIVE_INFINITY);
+
         if (debug == 1) {
-            System.out.println("[" + stationName + "]: Added " + currentEvent.patient.id + " to queue @T: " + currentEvent.eventTime);
+            System.out.println("[" + stationName + "]: Added " + patient.id + " to queue @T: " + currentEvent.eventTime);
         }
 
-//        if (!isOccupied) {
-//            Patient patientDepartingNext = queue.poll();
-//            setPatientProcessingTime(patientDepartingNext, currentEvent.eventTime);
-//            currentPatient = patientDepartingNext;
-//            scheduleNextDeparture(currentEvent.eventTime, patientDepartingNext);
-//        }
+        // if available bed
+        if (busyBeds < numBeds) {
+            Patient nextPatient = queue.poll();
+            double waitTime = currentEvent.eventTime - getPatientArrivalTime(nextPatient);
+            double startServiceTime = currentEvent.eventTime;
 
-        while (busyBeds < numBeds && !queue.isEmpty()) {
-            Patient patientDepartingNext = queue.poll();
-            setPatientProcessingTime(patientDepartingNext, currentEvent.eventTime);
-            scheduleNextDeparture(currentEvent.eventTime, patientDepartingNext);
+            setPatientProcessingTime(nextPatient, startServiceTime); //when service begins
+            scheduleNextDeparture(startServiceTime, nextPatient);
             busyBeds++;
         }
 
@@ -71,25 +68,12 @@ public abstract class ServiceStation extends Metrics {
         double serviceTime = Utils.getNormal(meanServiceTime, serviceStdDev);
         double nextDepartureTime = currentTime + serviceTime;
         eventList.add(new Event(nextDepartureTime, getDepartureEventType(), patient));
-  //      isOccupied = true;
         if (debug == 1) {
             System.out.println("[" + stationName + "]: Next departure: " + nextDepartureTime);
         }
     }
 
     public void departServiceStation(Event currentEvent) {
-//        if (currentPatient != currentEvent.patient) {
-//            throw new IllegalStateException("[" + stationName + "-ERROR]: Got " + currentEvent.patient.id + " [!=] Expected " + currentPatient.id);
-//        }
-//        if (debug == 1) {
-//            System.out.println(currentEvent.patient.id + " DP_" + stationName.toLowerCase() + ": " + currentEvent.eventTime);
-//        }
-//
-//        processPatientDeparture(currentEvent);
-//        setPatientDepartureTime(currentPatient, currentEvent.eventTime);
-//        departedPatients.add(currentPatient);
-//        isOccupied = false;
-//        currentPatient = null;
 
         if (debug == 1) {
             System.out.println(currentEvent.patient.id + " DP_" + stationName.toLowerCase() + ": " + currentEvent.eventTime);
@@ -100,7 +84,7 @@ public abstract class ServiceStation extends Metrics {
         departedPatients.add(currentEvent.patient);
         busyBeds--;
 
-        // Try to start service for another patient if queue isn't empty
+        //start service for another patient if queue isn't empty
         if (!queue.isEmpty()) {
             Patient nextPatient = queue.poll();
             setPatientProcessingTime(nextPatient, currentEvent.eventTime);
@@ -110,6 +94,7 @@ public abstract class ServiceStation extends Metrics {
 
 
     }
+
 
     public void printQuickStats() {
         computeMetrics();
@@ -142,5 +127,6 @@ public abstract class ServiceStation extends Metrics {
     protected abstract void setPatientProcessingTime(Patient patient, double time);
     protected abstract Event.EventType getDepartureEventType();
     protected abstract void processPatientDeparture(Event currentEvent);
+    protected abstract double getPatientArrivalTime(Patient patient);
     protected abstract Statistics.Stage getStatisticsStage();
 }

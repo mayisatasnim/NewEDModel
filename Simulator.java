@@ -3,7 +3,7 @@ import java.util.*;
 public class Simulator {
     int debug = 0;
     int totalArrivals = 0;
-    double arrivalRate = 10 / 60.0;
+    double arrivalRate = 12 / 60.0;
     double currentTime = 0;
     double dayEnds = 24 * 60;
     double nextArrivalTime = 0;
@@ -41,13 +41,19 @@ public class Simulator {
     }
 
     public void configureServiceTimes() {
-        sortNurse.setServiceTime(0, 0);
-        registration.setServiceTime(0, 0);
-        triage.setServiceTime(0, 0);
-        eruZone.setServiceTime(4.0, 1.0);
-        redZone.setServiceTime(4.0, 1.0);
-        greenZone.setServiceTime(4.0, 1.0);
-        fastTrackZone.setServiceTime(4.0, 1.0);
+        sortNurse.setServiceTime(4, 1);
+        registration.setServiceTime(5, 1);
+        triage.setServiceTime(13, 2);
+        eruZone.setServiceTime(134, 30);
+        redZone.setServiceTime(192, 30);
+        greenZone.setServiceTime(200, 30);
+        fastTrackZone.setServiceTime(129, 30);
+
+        eruZone.setStaffAvailable(4);
+        redZone.setStaffAvailable(13);
+        greenZone.setStaffAvailable(10);
+        fastTrackZone.setStaffAvailable(5);
+
     }
 
     public void begin(){
@@ -131,10 +137,24 @@ public class Simulator {
         System.out.println("ED Mean LOS time: " + Statistics.calculateMean(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.RESPONSE_TIME));
         System.out.println("Last event time: " + currentTime);
         System.out.println("Events unprocessed: "+ eventList.size());
+        if (debug ==1 ) {
+            System.out.println("Remaining events:");
+            for (Event e : eventList) {
+                System.out.println("[" + e.type + "] " + e.patient.id + " @T: " + e.eventTime);
+            }
+        }
+        //total death count
+        System.out.println("Total deaths: " + Statistics.countDeaths(edDisposedPatients));
+        //total lwbs
+        System.out.println("Total LWBS: " + Statistics.countLWBS(edDisposedPatients));
+
+
         System.out.println("\n=== QUICK STAGE OF SIMULATION SUMMARY ===\n");
-        // sortNurse.printQuickStats();
-        // registration.printQuickStats();
-        // triage.printQuickStats();
+
+        sortNurse.printQuickStats();
+        registration.printQuickStats();
+        triage.printQuickStats();
+
         eruZone.printQuickStats();
         redZone.printQuickStats();
         greenZone.printQuickStats();

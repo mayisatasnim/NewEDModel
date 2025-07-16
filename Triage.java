@@ -9,7 +9,7 @@ public class Triage extends ServiceStation {
     private Zone fastTrackZone;
 
     public Triage(Zone eruZone, Zone redZone, Zone greenZone, Zone fastTrackZone, PriorityQueue<Event> eventList) {
-        super("Triage", 10.0, 5.0, 1, eventList);
+        super("Triage", 10.0, 5.0, 3, eventList);
         this.triageQueue = this.queue;
         this.triagedPatients = this.departedPatients;
         this.eruZone = eruZone;
@@ -50,6 +50,11 @@ public class Triage extends ServiceStation {
 
     public void departTriage(Event currentEvent) {
         departServiceStation(currentEvent);
+    }
+
+    @Override
+    protected double getPatientArrivalTime(Patient patient) {
+        return patient.triageAT;
     }
 
     private void sendToAppropriateDepartment(Event currentEvent) {

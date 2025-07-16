@@ -46,6 +46,11 @@ public class SortNurse extends ServiceStation {
         departServiceStation(currentEvent);
     }
 
+    @Override
+    protected double getPatientArrivalTime(Patient patient) {
+        return patient.sortingAT;
+    }
+
     public void sendToAppropriateDepartment(Event currentEvent) {
         double esi = currentEvent.patient.ESILevel;
         double rand = Math.random();
