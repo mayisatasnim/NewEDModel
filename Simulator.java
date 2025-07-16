@@ -48,12 +48,6 @@ public class Simulator {
         redZone.setServiceTime(192, 30);
         greenZone.setServiceTime(200, 30);
         fastTrackZone.setServiceTime(129, 30);
-
-        eruZone.setStaffAvailable(4);
-        redZone.setStaffAvailable(13);
-        greenZone.setStaffAvailable(10);
-        fastTrackZone.setStaffAvailable(5);
-
     }
 
     public void begin(){
@@ -62,6 +56,9 @@ public class Simulator {
             if (!eventList.isEmpty()){
                 Event currentEvent = eventList.poll();
                 currentTime = currentEvent.eventTime;
+
+                staff(currentTime);
+
                 switch (currentEvent.type){
                     case edArrival:
                         sortNurse.addPatient(currentEvent);
@@ -100,13 +97,15 @@ public class Simulator {
                 }
             }
         }
-        
+
         // some statistics
         printQuickStats();
     }
 
     public void scheduleNextEDArrival(){
-        double interEDArrivalTime = Utils.getExp(arrivalRate);
+       // double interEDArrivalTime = Utils.getExp(arrivalRate);
+        double interEDArrivalTime = Utils.getExp(getArrivalRateByTime(currentTime));
+
         double nextEDArrivalTime = currentTime + interEDArrivalTime;
         Patient newPatient = new Patient(totalArrivals);
         eventList.add(new Event(nextEDArrivalTime,Event.EventType.edArrival, newPatient));
@@ -115,6 +114,57 @@ public class Simulator {
             System.out.println("\n[Simulator]: Next ED-AT: " + nextEDArrivalTime+"\n");
         }
     }
+
+    //dynamic arrival time
+    public double getArrivalRateByTime(double currentTime) {
+        int hour = (int) ((currentTime / 60.0) % 24);
+
+        switch(hour){
+            case 0,7: return 5.0 / 60.0;
+            case 1: return 4.5 / 60.0;
+            case 2: return 4.0 / 60.0;
+            case 3: return 3.0 / 60.0;
+            case 4, 5, 6: return 4.0 / 60.0;
+            case 8, 22: return 7.0 / 60.0;
+            case 9: return 10.0 / 60.0;
+            case 10, 14, 15, 16: return 13.0 / 60.0;
+            case 11, 12, 13: return 14.0 / 60.0;
+            case 17: return 12.0 / 60.0;
+            case 18, 19: return 11.0 / 60.0;
+            case 20: return 9.0 / 60.0;
+            case 21: return 8.0 / 60.0;
+            case 23: return 6.0 / 60.0;
+        }
+
+        return 10.0 / 60.0;
+    }
+
+    //dynamic staffing
+    public void staff(double currentTime){
+        int hour = (int) ((currentTime / 60.0) % 24);
+
+        //overnight
+        if (hour >= 0 && hour < 7) {
+            redZone.setStaffAvailable(13);
+            greenZone.setStaffAvailable(10);
+            fastTrackZone.setStaffAvailable(5);
+            eruZone.setStaffAvailable(4);
+
+            //morning + afternoon shift
+        } else if (hour >= 7 && hour < 15){
+            redZone.setStaffAvailable(13);
+            greenZone.setStaffAvailable(10);
+            fastTrackZone.setStaffAvailable(5);
+            eruZone.setStaffAvailable(4);
+        }else {
+            //evening shift
+            redZone.setStaffAvailable(8);
+            greenZone.setStaffAvailable(6);
+            fastTrackZone.setStaffAvailable(3);
+            eruZone.setStaffAvailable(2);
+        }
+    }
+
     public static void main(String[]args){
         Simulator sim = new Simulator();
         sim.begin();
@@ -125,13 +175,13 @@ public class Simulator {
         System.out.println("ED Total arrivals: " + totalArrivals);
         System.out.println("Total patients disposed by ED: " + edDisposedPatients.size());
         double totalUnprocessedPatients = (
-            sortNurse.sortNQueue.size() + 
-            registration.regQueue.size() +
-            triage.triageQueue.size() + 
-            eruZone.zoneQueue.size() +
-            redZone.zoneQueue.size() +
-            greenZone.zoneQueue.size() +
-            fastTrackZone.zoneQueue.size());
+                sortNurse.sortNQueue.size() +
+                        registration.regQueue.size() +
+                        triage.triageQueue.size() +
+                        eruZone.zoneQueue.size() +
+                        redZone.zoneQueue.size() +
+                        greenZone.zoneQueue.size() +
+                        fastTrackZone.zoneQueue.size());
         System.out.println("Total unprocessed patients in ED: " + totalUnprocessedPatients);
         System.out.println("ED Mean Door-to-Provider time: " + Statistics.calculateMean(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.DOOR_TO_PROVIDER_TIME));
         System.out.println("ED Mean LOS time: " + Statistics.calculateMean(edDisposedPatients, Statistics.Stage.ED, Statistics.Property.RESPONSE_TIME));
