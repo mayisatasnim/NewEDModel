@@ -20,7 +20,7 @@ public class Zone extends ServiceStation {
     public Zone(Simulator.zoneName zoneName, List<Patient> edDisposedPatients, PriorityQueue<Event> eventList, Simulator sim) {
         super("Zone-" + zoneName, 4, 1.0, getZoneCapacity(zoneName), eventList);
         this.edDisposedPatients = edDisposedPatients;
-        this.simulator = simulator;
+        this.simulator = sim;
 
         this.zoneName = zoneName;
         this.zoneQueue = this.queue;
@@ -63,9 +63,7 @@ public class Zone extends ServiceStation {
     @Override
     protected void processPatientDeparture(Event currentEvent) {
         if (!currentEvent.patient.isCountedDisposed) {
-            edDisposedPatients.add(currentEvent.patient);
             simulator.addDisposedPatient(currentEvent.patient);
-            currentEvent.patient.isCountedDisposed = true;
         }
     }
 
@@ -97,7 +95,10 @@ public class Zone extends ServiceStation {
                     System.out.println("[LWBS]" + patient.id + " LEFT WITHOUT BEING SEEN in " + stationName + " @T: " + patient.LWBSTime);
                 }
 
-                edDisposedPatients.add(patient);
+                if (!patient.isCountedDisposed) {
+                    simulator.addDisposedPatient(patient);
+                }
+
                 return; //patient leaves w/out being added to queue
             }
         }
@@ -183,10 +184,12 @@ public class Zone extends ServiceStation {
         if ((patient.ESILevel == 1) && serviceTime > 360) {
             patient.died = true;
             patient.deathTime = currentTime + 360;
+
             if (!patient.isCountedDisposed) {
-                edDisposedPatients.add(patient);
-                patient.isCountedDisposed = true;
+                simulator.addDisposedPatient(patient);
             }
+
+
             if (debug == 1) {
                 System.out.println("[Death] " + patient.id + " died during treatment in " + stationName + " @T: " + patient.deathTime);
             }

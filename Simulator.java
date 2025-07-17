@@ -167,11 +167,15 @@ public class Simulator {
 
     //used to get patients after warm up stage
     public void addDisposedPatient(Patient patient) {
-        edDisposedPatients.add(patient);
-        if (patient.zoneDT >= warmUpEndTime) {
-            steadyStateDisposedPatients.add(patient);
+        if (!patient.isCountedDisposed) {
+            edDisposedPatients.add(patient);
+            patient.isCountedDisposed = true;
+            if (patient.zoneDT >= warmUpEndTime) {
+                steadyStateDisposedPatients.add(patient);
+            }
         }
     }
+
 
     public void printQuickStats(int numDays) {
         System.out.println("\n===DAY's SIMULATION SUMMARY (STEADY STATE ONLY, AFTER WARM-UP) ===");

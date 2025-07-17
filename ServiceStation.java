@@ -7,9 +7,6 @@ public abstract class ServiceStation extends Metrics {
     protected int numBeds; //servers
     protected int busyBeds = 0; //beds in use
 
-    protected int staffAvailable;
-    protected int busyStaff = 0;
-
     protected double meanServiceTime;
     protected double serviceStdDev;
     protected PriorityQueue<Patient> queue;
