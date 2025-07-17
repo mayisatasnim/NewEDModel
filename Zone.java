@@ -7,18 +7,25 @@ public class Zone extends ServiceStation {
     private Simulator.zoneName zoneName;
 
 
+
     //admitted but waiting for treatment
     private Queue<Patient> waitingForStaff;  // patients admitted to a bed but waiting for staff
     private int maxStaffAvailable;
     private int activeTreatments = 0;
 
 
-    public Zone(Simulator.zoneName zoneName, List<Patient> edDisposedPatients, PriorityQueue<Event> eventList) {
+    private Simulator simulator;
+
+
+    public Zone(Simulator.zoneName zoneName, List<Patient> edDisposedPatients, PriorityQueue<Event> eventList, Simulator sim) {
         super("Zone-" + zoneName, 4, 1.0, getZoneCapacity(zoneName), eventList);
+        this.edDisposedPatients = edDisposedPatients;
+        this.simulator = simulator;
+
         this.zoneName = zoneName;
         this.zoneQueue = this.queue;
         this.zoneDepartedPatients = this.departedPatients;
-        this.edDisposedPatients = edDisposedPatients;
+        this.simulator = sim;
         this.waitingForStaff = new LinkedList<>();
     }
 
@@ -57,6 +64,7 @@ public class Zone extends ServiceStation {
     protected void processPatientDeparture(Event currentEvent) {
         if (!currentEvent.patient.isCountedDisposed) {
             edDisposedPatients.add(currentEvent.patient);
+            simulator.addDisposedPatient(currentEvent.patient);
             currentEvent.patient.isCountedDisposed = true;
         }
     }
@@ -74,9 +82,10 @@ public class Zone extends ServiceStation {
         // checking lwbs for walk-in, non-critical patients
         if (patient.arrivalMode.equals("Walk-in") && patient.ESILevel >= 3) {
             int hostQueueSize = queue.size();
-            double arrivalRate = 10/60;
             double doorToProviderTime = currentEvent.eventTime - patient.sortingAT;
             int currentHour = (int) ((currentEvent.eventTime / 60.0) % 24);
+            double arrivalRate = Simulator.getArrivalRateByTime(currentHour);
+
 
             patient.computeLWBSProbability(hostQueueSize, arrivalRate, doorToProviderTime, currentHour);
             double r = Math.random();
@@ -171,9 +180,9 @@ public class Zone extends ServiceStation {
     protected void scheduleNextDeparture(double currentTime, Patient patient) {
         double serviceTime = Utils.getNormal(meanServiceTime, serviceStdDev);
 
-        if ((patient.ESILevel == 1 || patient.ESILevel == 2) && serviceTime > 240) {
+        if ((patient.ESILevel == 1) && serviceTime > 360) {
             patient.died = true;
-            patient.deathTime = currentTime + 240;
+            patient.deathTime = currentTime + 360;
             if (!patient.isCountedDisposed) {
                 edDisposedPatients.add(patient);
                 patient.isCountedDisposed = true;
@@ -217,26 +226,23 @@ public class Zone extends ServiceStation {
     }
 
 
-
-    @Override
-    public void printQuickStats() {
+    public void printQuickStats(int numDays) {
         System.out.println("\n[Zone-" + zoneName + "]: Quick Stats");
+        System.out.println("Days simulated: " + numDays);
         System.out.println("Total arrivals: " + totalArrivals);
+        System.out.println("Avg arrivals per day: " + (totalArrivals / (double) numDays));
         System.out.println("Total processed: " + departedPatients.size());
-        System.out.println("Current Queue size[waiting]: " + queue.size());
+        System.out.println("Avg processed per day: " + (departedPatients.size() / (double) numDays));
+        System.out.println("Current Queue size [waiting]: " + queue.size());
         System.out.println("Mean zone waiting time: " + Statistics.calculateMean(departedPatients, Statistics.Stage.ZONE, Statistics.Property.WAITING_TIME));
         System.out.println("Mean zone service time: " + Statistics.calculateMean(departedPatients, Statistics.Stage.ZONE, Statistics.Property.PROCESSING_TIME));
-
-        //count deaths
         System.out.println("Total deaths in zone: " + countDeaths());
-
-        //lwbs in zone
+        System.out.println("Avg deaths per day: " + (countDeaths() / (double) numDays));
         System.out.println("Total LWBS in zone: " + countLWBS());
-
-
+        System.out.println("Avg LWBS per day: " + (countLWBS() / (double) numDays));
         System.out.println("Patients in bed waiting for staff: " + waitingForStaff.size());
         System.out.println("Active treatments: " + activeTreatments + "/" + maxStaffAvailable);
-
-
     }
+
+
 }

@@ -116,10 +116,10 @@ public abstract class ServiceStation extends Metrics {
         realMeanInterArrivalTime = Statistics.calculateMean(arrivedPatients, getStatisticsStage(), Statistics.Property.INTER_ARRIVAL_TIME);
         totalProcessed = departedPatients.size(); // (X) - Throughput
         currentQueueSize = queue.size(); // (NQ) - Current Queue Size
-        realServiceRate = 1.0 / realMeanServiceTime;
+        realServiceRate = (realMeanServiceTime > 0) ? 1.0 / realMeanServiceTime : 0;
+        realArrivalRate = (realMeanInterArrivalTime > 0) ? 1.0 / realMeanInterArrivalTime : 0;
+        utilization = (realServiceRate > 0) ? realArrivalRate / realServiceRate : 0;  // Utilization (ρ) = λ / μ
 
-        realArrivalRate = 1.0 / realMeanInterArrivalTime;
-        utilization = realArrivalRate / realServiceRate; // Utilization (ρ) = λ / μ
     }
 
     protected abstract void setPatientArrivalTime(Patient patient, double time);
