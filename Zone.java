@@ -25,7 +25,6 @@ public class Zone extends ServiceStation {
         this.zoneName = zoneName;
         this.zoneQueue = this.queue;
         this.zoneDepartedPatients = this.departedPatients;
-        this.simulator = sim;
         this.waitingForStaff = new LinkedList<>();
     }
 
