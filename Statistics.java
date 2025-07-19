@@ -20,15 +20,16 @@ public abstract class Statistics extends Metrics{
     }
     public static double calculateMean(List<Patient> patients, Stage stage, Property property) {
         double sum = 0.0;
-        int count = 0;
+        int count = patients.size();
+        if(property == Property.INTER_ARRIVAL_TIME && count >= 1) {
+            sum = totalInterArrivalTime(patients, stage);
+            return sum / count;
+        }
         for (Patient p : patients) {
             //skip patients that lwbs and death
             if (p.hasLWBS || p.died) continue;
 
             double value = 0.0;
-            if(property == Property.INTER_ARRIVAL_TIME) {
-                return totalInterArrivalTime(patients, stage) / patients.size();
-            }
             switch (stage) {
                 case SORTING:
                     switch (property) {
@@ -106,7 +107,6 @@ public abstract class Statistics extends Metrics{
                     throw new IllegalArgumentException("Unknown stage");
             }
             sum += value;
-            count++;
         }
         return count > 0 ? sum / count : 0.0;
     }
@@ -114,41 +114,36 @@ public abstract class Statistics extends Metrics{
         if (patients == null || patients.size() <= 1) return 0.0;
 
         double sum = 0.0;
-        int count = 0;
         switch (stage) {
             case ED:
             case SORTING:
                 for (int i = 1; i < patients.size(); i++) {
                     double interArrivalTime = patients.get(i).sortingAT - patients.get(i - 1).sortingAT;
                     sum += interArrivalTime;
-                    count++;
                 }
                 break;
             case REGISTRATION:
                 for (int i = 1; i < patients.size(); i++) {
                     double interArrivalTime = patients.get(i).registrationAT - patients.get(i - 1).registrationAT;
                     sum += interArrivalTime;
-                    count++;
                 }
                 break;
             case TRIAGE:
                 for (int i = 1; i < patients.size(); i++) {
                     double interArrivalTime = patients.get(i).triageAT - patients.get(i - 1).triageAT;
                     sum += interArrivalTime;
-                    count++;
                 }
                 break;
             case ZONE:
                 for (int i = 1; i < patients.size(); i++) {
                     double interArrivalTime = patients.get(i).zoneAT - patients.get(i - 1).zoneAT;
                     sum += interArrivalTime;
-                    count++;
                 }
                 break;
             default:
                 throw new IllegalArgumentException("Unknown stage for inter-arrival time calculation");
         }
-        return count > 0 ? sum / count : 0.0;
+        return sum;
     }
 
     public static int countDeaths(List<Patient> patients) {
