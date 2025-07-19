@@ -40,6 +40,7 @@ public abstract class ServiceStation extends Metrics {
     public void addPatient(Event currentEvent) {
         Patient patient = currentEvent.patient;
         queue.add(patient);
+        arrivedPatients.add(patient);
         totalArrivals++;
         setPatientArrivalTime(patient, currentEvent.eventTime);
         setPatientDepartureTime(patient, Double.POSITIVE_INFINITY);
