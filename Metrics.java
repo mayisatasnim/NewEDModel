@@ -9,10 +9,10 @@ public abstract class Metrics {
     protected int currentQueueSize; // (NQ) - Current Queue Size
     protected double utilization; // (ρ) - Utilization
     protected double patientsInSystem; // (N) - Total Patients in System
-    protected String stationName;
+    protected Simulator.StationName stationName;
     protected int totalArrivals;
-        
-    protected Metrics(String stationName) {
+
+    protected Metrics(Simulator.StationName stationName) {
         this.stationName = stationName;
         totalArrivals = 0;
         realMeanWaitingTime = 0.0;

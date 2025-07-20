@@ -1,13 +1,7 @@
-import java.util.*;
-
 public class Registration extends ServiceStation {
-    private Triage triage;
-    public PriorityQueue<Patient> regQueue;
 
-    public Registration(Triage triage, PriorityQueue<Event> eventList) {
-        super("Registration", 8.0, 3.0, 1, eventList);
-        this.triage = triage;
-        this.regQueue = this.queue;
+    public Registration(Simulator simulator) {
+        super(Simulator.StationName.REGISTRATION, 8.0, 3.0, 1, simulator);
     }
 
     @Override
@@ -31,21 +25,12 @@ public class Registration extends ServiceStation {
     }
 
     @Override
-    protected void processPatientDeparture(Event currentEvent) {
-        triage.addPatient(currentEvent);
+    protected void sendToAppropriateNextStation(Event currentEvent) {
+        simulator.triage.addPatient(currentEvent);
     }
 
     @Override
     protected double getPatientArrivalTime(Patient patient) {
         return patient.registrationAT;
-    }
-
-    @Override
-    protected Statistics.Stage getStatisticsStage() {
-        return Statistics.Stage.REGISTRATION;
-    }
-
-    public void departRegistration(Event currentEvent) {
-        departServiceStation(currentEvent);
     }
 }

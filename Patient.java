@@ -12,6 +12,7 @@ public class Patient {
     public boolean hasLWBS;
     public double LWBSProbability;
     public double LWBSTime;
+    public boolean hasScheduledLWBSCheck = false; // to avoid multiple LWBS checks
 
     //death
     public boolean died;
@@ -31,13 +32,14 @@ public class Patient {
     public double zoneAT;
     public double zonePT;
     public double zoneDT;
+    public int regNo;
 
-    // destination zone
-    public Simulator.zoneName zoneName;
+    public Simulator.StationName currentStationName;
 
     public Patient(int regNo) {
         // Initialize all fields
         this.id = "P_" + regNo; 
+        this.regNo = regNo;
         this.age = inferAge();
         this.arrivalMode = inferArrivalMode();
         this.ESILevel = inferESILevel(this.arrivalMode);
@@ -48,6 +50,7 @@ public class Patient {
         this.died = false;
         this.deathTime = -1;
         this.isCountedDisposed = false;
+        currentStationName = Simulator.StationName.NONE; // Default station name
 
         if(debug) {
             printDebugInfo();
@@ -55,12 +58,13 @@ public class Patient {
     }
 
 
-    private void printDebugInfo() {
+    public void printDebugInfo() {
         System.out.println(this.id + "-arrivalMode: " + arrivalMode);
         System.out.println(this.id + "-ESILevel: " + ESILevel);
         System.out.println(this.id + "-acuity: " + acuity);
         System.out.println(this.id + "-age: " + age);
         System.out.println(this.id + "-LWBS prob: " + LWBSProbability);
+        System.out.println(this.id + "-HostStation: " + currentStationName);
     }
 
     public String inferArrivalMode(){
@@ -126,6 +130,52 @@ public class Patient {
         else if (r < 0.90) return 80 + (int)(Math.random() * 10); // 80-89 (20%)
         else return 0 + (int)(Math.random() * 18); // 0-17 (10%)
     }
+
+     public void processLWBSDecision(Simulator simulator) {
+        hasScheduledLWBSCheck = false; // reset to allow future checks
+        double currentTime = simulator.currentTime;
+        ServiceStation station = simulator.getStationByName(currentStationName);
+        double doorToProviderTime = currentTime - this.sortingAT;
+        int currentHour = Utils.getDayTimeFromMins(currentTime);
+        double arrivalRate = Simulator.getArrivalRateByTime(currentHour);
+        
+        // if patient is still in the ED
+        if(simulator.edDisposedPatients.contains(this)) {
+            simulator.addDisposedPatient(this);
+            return;
+        }
+
+        this.computeLWBSProbability(simulator.getTotalPatientsInWaitingAreas(), arrivalRate, doorToProviderTime, currentHour);
+
+        if (this.LWBSProbability > 0.15) {
+            this.hasLWBS = true;
+            this.LWBSTime = currentTime;
+            station.lwbsPatients.add(this);
+            station.queue.remove(this);
+            if (debug) {
+                System.out.println("[LWBS]" + this.id + " LWBS in " + station.stationName + " @T: " + this.LWBSTime);
+            }
+
+            if (!this.isCountedDisposed) {
+                isCountedDisposed = true; // prevent recheck after Disposition
+            }
+        }
+
+        if (!hasLWBS()) {
+            this.scheduleDecideToLWBS(simulator);
+        }
+    }
+
+    public boolean hasLWBS() {
+        return hasLWBS;
+    }
+    public void scheduleDecideToLWBS(Simulator simulator) {
+        if (!this.hasScheduledLWBSCheck) {
+            this.hasScheduledLWBSCheck = true; // prevent multiple scheduling
+            simulator.eventList.add(new Event(simulator.currentTime + simulator.lwbsReevaluationPeriod, Event.EventType.decideToLWBS, this));
+        }
+    }
+
     public static void main(String[]args){
         // Test both modes
         System.out.println("=== Testing CLASS_LEVEL_DEBUG = true ===");
