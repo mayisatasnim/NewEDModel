@@ -7,4 +7,16 @@ public abstract class Utils {
         double u = Math.random();
         return (-1.0/rate)*Math.log(1-u);
     }
+
+    public static int getDayTimeFromMins(double minutes) {
+        return (int) ((minutes / 60) % 24);
+    }
+
+    public static String formatMinsToHours(double minutes) {
+        int hours = (int) (minutes / 60.0);
+        int mins = (int) (minutes % 60.0);
+        if(hours > 0)
+            return String.format("%02d h + %02d mins", hours, mins);
+        return String.format("%02d mins", mins);
+    }
 }

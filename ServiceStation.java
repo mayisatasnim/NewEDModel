@@ -6,17 +6,18 @@ public abstract class ServiceStation extends Metrics {
     //change for multiple bed support in zones
     protected int numBeds; //servers
     protected int busyBeds = 0; //beds in use
-
+     //time in minutes to decide to LWBS
     protected double meanServiceTime;
     protected double serviceStdDev;
-    protected PriorityQueue<Patient> queue;
+    protected WaitingArea queue;
     protected List<Patient> departedPatients;
     protected List<Patient> arrivedPatients;
+    protected List<Patient> lwbsPatients;
     protected PriorityQueue<Event> eventList;
-    protected String stationName;
+    protected Simulator simulator;
 
 
-    public ServiceStation(String stationName, double meanServiceTime, double serviceStdDev, int numBeds, PriorityQueue<Event> eventList) {
+    public ServiceStation(Simulator.StationName stationName, double meanServiceTime, double serviceStdDev, int numBeds, Simulator simulator) {
         super(stationName);
         this.stationName = stationName;
         setServiceTime(meanServiceTime, serviceStdDev);
@@ -25,11 +26,12 @@ public abstract class ServiceStation extends Metrics {
         this.numBeds = numBeds;
         this.busyBeds = 0;
 
-
-        this.queue = new PriorityQueue<>(Comparator.comparingDouble(p -> p.ESILevel));
+        this.queue = new WaitingArea(WaitingArea.PrioritizationPolicy.HIGHER_ACUITY_FIRST);
         this.departedPatients = new ArrayList<>();
         this.arrivedPatients = new ArrayList<>();
-        this.eventList = eventList;
+        this.lwbsPatients = new ArrayList<>();
+        this.eventList = simulator.eventList;
+        this.simulator = simulator;
     }
 
     public void setServiceTime(double meanServiceTime, double serviceStdDev) {
@@ -42,6 +44,8 @@ public abstract class ServiceStation extends Metrics {
         queue.add(patient);
         arrivedPatients.add(patient);
         totalArrivals++;
+        updatePatientLocation(patient);
+        patient.scheduleDecideToLWBS(simulator);
         setPatientArrivalTime(patient, currentEvent.eventTime);
         setPatientDepartureTime(patient, Double.POSITIVE_INFINITY);
 
@@ -51,43 +55,41 @@ public abstract class ServiceStation extends Metrics {
 
         // if available bed
         if (busyBeds < numBeds) {
-            Patient nextPatient = queue.poll();
-            double waitTime = currentEvent.eventTime - getPatientArrivalTime(nextPatient);
-            double startServiceTime = currentEvent.eventTime;
-
-            setPatientProcessingTime(nextPatient, startServiceTime); //when service begins
-            scheduleNextDeparture(startServiceTime, nextPatient);
-            busyBeds++;
+            scheduleNextDeparture(currentEvent.eventTime);
         }
 
     }
 
-    protected void scheduleNextDeparture(double currentTime, Patient patient) {
+    protected void scheduleNextDeparture(double currentTime) {
+        Patient nextPatient = queue.poll();
+        setPatientProcessingTime(nextPatient, currentTime);
         double serviceTime = Utils.getNormal(meanServiceTime, serviceStdDev);
         double nextDepartureTime = currentTime + serviceTime;
-        eventList.add(new Event(nextDepartureTime, getDepartureEventType(), patient));
+        eventList.add(new Event(nextDepartureTime, getDepartureEventType(), nextPatient));
+        busyBeds++;
         if (debug == 1) {
             System.out.println("[" + stationName + "]: Next departure: " + nextDepartureTime);
         }
     }
 
+    protected void updatePatientLocation(Patient patient) {
+        patient.currentStationName = stationName;
+    }
+
     public void departServiceStation(Event currentEvent) {
 
         if (debug == 1) {
-            System.out.println(currentEvent.patient.id + " DP_" + stationName.toLowerCase() + ": " + currentEvent.eventTime);
+            System.out.println(currentEvent.patient.id + " DP_" + stationName + ": " + currentEvent.eventTime);
         }
 
-        processPatientDeparture(currentEvent);
+        sendToAppropriateNextStation(currentEvent);
         setPatientDepartureTime(currentEvent.patient, currentEvent.eventTime);
         departedPatients.add(currentEvent.patient);
         busyBeds--;
 
         //start service for another patient if queue isn't empty
         if (!queue.isEmpty()) {
-            Patient nextPatient = queue.poll();
-            setPatientProcessingTime(nextPatient, currentEvent.eventTime);
-            scheduleNextDeparture(currentEvent.eventTime, nextPatient);
-            busyBeds++;
+            scheduleNextDeparture(currentEvent.eventTime);
         }
 
 
@@ -97,21 +99,23 @@ public abstract class ServiceStation extends Metrics {
     public void printQuickStats() {
         computeMetrics();
         System.out.println("\n[" + stationName + "]: Quick Stats");
-        System.out.println("Total arrived: " + totalArrivals);
+        System.out.println("Total arrivals: " + totalArrivals);
         System.out.println("Total processed: " + departedPatients.size());
+        System.out.println("Avg arrivals per day: " + (totalArrivals / (double) simulator.numDays));
+        System.out.println("Avg processed per day: " + (departedPatients.size() / (double) simulator.numDays));
         System.out.println("Current Queue size[waiting]: " + queue.size());
-        System.out.println("Mean " + stationName.toLowerCase() + " Real waiting time: " + realMeanWaitingTime);
-        System.out.println("Mean " + stationName.toLowerCase() + " Real service time: " + realMeanServiceTime);
-        System.out.println("Expected " + stationName.toLowerCase() + " Mean Service time: " + meanServiceTime);
-        System.out.println("Mean " + stationName.toLowerCase() + " Real LOS[ResponseTime]: " + realResponseTime);
-        System.out.println("Mean " + stationName.toLowerCase() + " Real Inter-Arrival Time: " + realMeanInterArrivalTime);
+        System.out.println("[R]Mean " + stationName + " waiting time: " + Utils.formatMinsToHours(realMeanWaitingTime));
+        System.out.println("[R]Mean " + stationName + " service time: " + Utils.formatMinsToHours(realMeanServiceTime));
+        System.out.println("[E]Mean " + stationName + " service time: " + Utils.formatMinsToHours(meanServiceTime));
+        System.out.println("[R]Mean " + stationName + " LOS[ResponseTime]: " + Utils.formatMinsToHours(realResponseTime));
+        System.out.println("[R]Mean " + stationName + " Inter-Arrival Time: " + Utils.formatMinsToHours(realMeanInterArrivalTime));
     }
 
     public void computeMetrics() {
-        realMeanWaitingTime = Statistics.calculateMean(departedPatients, getStatisticsStage(), Statistics.Property.WAITING_TIME);
-        realMeanServiceTime = Statistics.calculateMean(departedPatients, getStatisticsStage(), Statistics.Property.PROCESSING_TIME);
-        realResponseTime = Statistics.calculateMean(departedPatients, getStatisticsStage(), Statistics.Property.RESPONSE_TIME);
-        realMeanInterArrivalTime = Statistics.calculateMean(arrivedPatients, getStatisticsStage(), Statistics.Property.INTER_ARRIVAL_TIME);
+        realMeanWaitingTime = Statistics.calculateMean(departedPatients, stationName, Statistics.Property.WAITING_TIME);
+        realMeanServiceTime = Statistics.calculateMean(departedPatients, stationName, Statistics.Property.PROCESSING_TIME);
+        realResponseTime = Statistics.calculateMean(departedPatients, stationName, Statistics.Property.RESPONSE_TIME);
+        realMeanInterArrivalTime = Statistics.calculateMean(arrivedPatients, stationName, Statistics.Property.INTER_ARRIVAL_TIME);
         totalProcessed = departedPatients.size(); // (X) - Throughput
         currentQueueSize = queue.size(); // (NQ) - Current Queue Size
         realServiceRate = (realMeanServiceTime > 0) ? 1.0 / realMeanServiceTime : 0;
@@ -124,7 +128,6 @@ public abstract class ServiceStation extends Metrics {
     protected abstract void setPatientDepartureTime(Patient patient, double time);
     protected abstract void setPatientProcessingTime(Patient patient, double time);
     protected abstract Event.EventType getDepartureEventType();
-    protected abstract void processPatientDeparture(Event currentEvent);
+    protected abstract void sendToAppropriateNextStation(Event currentEvent);
     protected abstract double getPatientArrivalTime(Patient patient);
-    protected abstract Statistics.Stage getStatisticsStage();
 }

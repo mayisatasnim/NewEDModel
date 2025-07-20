@@ -1,13 +1,6 @@
 import java.util.List;
 
-public abstract class Statistics extends Metrics{
-    enum Stage {
-        SORTING,
-        REGISTRATION,
-        TRIAGE,
-        ZONE,
-        ED
-    }
+public abstract class Statistics{
     enum Property {
         WAITING_TIME,
         PROCESSING_TIME,
@@ -15,10 +8,7 @@ public abstract class Statistics extends Metrics{
         DOOR_TO_PROVIDER_TIME,
         INTER_ARRIVAL_TIME     
     }
-    public Statistics(String stationName) {
-        super(stationName);
-    }
-    public static double calculateMean(List<Patient> patients, Stage stage, Property property) {
+    public static double calculateMean(List<Patient> patients, Simulator.StationName stage, Property property) {
         double sum = 0.0;
         int count = patients.size();
         if(property == Property.INTER_ARRIVAL_TIME && count >= 1) {
@@ -31,7 +21,7 @@ public abstract class Statistics extends Metrics{
 
             double value = 0.0;
             switch (stage) {
-                case SORTING:
+                case SORT:
                     switch (property) {
                         case WAITING_TIME:
                             value = p.sortingPT - p.sortingAT;
@@ -77,6 +67,11 @@ public abstract class Statistics extends Metrics{
                     }
                     break;
                 case ZONE:
+                case ERU:
+                case FAST_TRACK:
+                case RED:
+                case GREEN:
+                case BLUE:
                     switch (property) {
                         case WAITING_TIME:
                             value = p.zonePT - p.zoneAT;
@@ -110,13 +105,13 @@ public abstract class Statistics extends Metrics{
         }
         return count > 0 ? sum / count : 0.0;
     }
-    public static double totalInterArrivalTime(List<Patient> patients, Stage stage) {
+    public static double totalInterArrivalTime(List<Patient> patients, Simulator.StationName stage) {
         if (patients == null || patients.size() <= 1) return 0.0;
 
         double sum = 0.0;
         switch (stage) {
             case ED:
-            case SORTING:
+            case SORT:
                 for (int i = 1; i < patients.size(); i++) {
                     double interArrivalTime = patients.get(i).sortingAT - patients.get(i - 1).sortingAT;
                     sum += interArrivalTime;
@@ -135,6 +130,11 @@ public abstract class Statistics extends Metrics{
                 }
                 break;
             case ZONE:
+            case ERU:
+            case FAST_TRACK:
+            case RED:
+            case GREEN:
+            case BLUE:
                 for (int i = 1; i < patients.size(); i++) {
                     double interArrivalTime = patients.get(i).zoneAT - patients.get(i - 1).zoneAT;
                     sum += interArrivalTime;

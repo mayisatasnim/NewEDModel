@@ -1,15 +1,7 @@
-import java.util.*;
-
 public class SortNurse extends ServiceStation {
-    private Registration registration;
-    private Zone eruZone;
-    public PriorityQueue<Patient> sortNQueue;
 
-    public SortNurse(Registration registration, Zone eruZone, PriorityQueue<Event> eventList) {
-        super("SortNurse", 10.0, 1.0, 1, eventList);
-        this.registration = registration;
-        this.eruZone = eruZone;
-        this.sortNQueue = this.queue;
+    public SortNurse(Simulator simulator) {
+        super(Simulator.StationName.SORT, 10.0, 1.0, 1, simulator);
     }
 
     @Override
@@ -33,34 +25,21 @@ public class SortNurse extends ServiceStation {
     }
 
     @Override
-    protected void processPatientDeparture(Event currentEvent) {
-        sendToAppropriateDepartment(currentEvent);
-    }
+    protected void sendToAppropriateNextStation(Event currentEvent) {
+        double esi = currentEvent.patient.ESILevel;
+        double rand = Math.random();
 
-    @Override
-    protected Statistics.Stage getStatisticsStage() {
-        return Statistics.Stage.SORTING;
-    }
-
-    public void departSortingNurse(Event currentEvent) {
-        departServiceStation(currentEvent);
+        if (esi == 1 && rand < 0.95) {
+            simulator.eruZone.addPatient(currentEvent);
+        } else if (esi == 2 && rand < 0.10) {
+            simulator.eruZone.addPatient(currentEvent);
+        } else {
+            simulator.registration.addPatient(currentEvent);
+        }
     }
 
     @Override
     protected double getPatientArrivalTime(Patient patient) {
         return patient.sortingAT;
-    }
-
-    public void sendToAppropriateDepartment(Event currentEvent) {
-        double esi = currentEvent.patient.ESILevel;
-        double rand = Math.random();
-
-        if (esi == 1 && rand < 0.95) {
-            eruZone.addPatient(currentEvent);
-        } else if (esi == 2 && rand < 0.10) {
-            eruZone.addPatient(currentEvent);
-        } else {
-            registration.addPatient(currentEvent);
-        }
     }
 }

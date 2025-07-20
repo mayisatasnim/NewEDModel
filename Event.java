@@ -5,6 +5,7 @@ public class Event implements Comparable<Event> {
         registerDeparture,
         triageDeparture,
         zoneDeparture,
+        decideToLWBS
     }
 
     public double eventTime;
