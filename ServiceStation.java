@@ -108,7 +108,9 @@ public abstract class ServiceStation extends Metrics {
         }
         System.out.println("Total processed: " + departedPatients.size());
         System.out.println("Avg arrivals per day: " + (totalArrivals / (double) simulator.numDays));
-        System.out.println("Avg processed per day: " + (departedPatients.size() / (double) simulator.numDays));
+
+        System.out.println("% arrivals at this station: " + (totalArrivals/ (double) simulator.totalArrivals)*100.0 + "%");
+
         System.out.println("Current Queue size[waiting]: " + queue.size());
         System.out.println("[R]Mean " + stationName + " waiting time: " + Utils.formatMinsToHours(realMeanWaitingTime));
         System.out.println("[R]Mean " + stationName + " service time: " + Utils.formatMinsToHours(realMeanServiceTime));
