@@ -197,37 +197,43 @@ public class Simulator {
     }
 
     public void printQuickStats() {
-        System.out.println("Days simulated: " + numDays);
+        System.out.println("========== ED SIMULATION SUMMARY ==========");
+        System.out.printf("Days simulated: %d%n", (int) numDays);
+        System.out.println("-------------------------------------------");
+        System.out.printf("Total arrivals: %d%n", totalArrivals);
+        System.out.printf("Avg arrivals per day: %.2f%n", totalArrivals / numDays);
+        System.out.printf("Total patients disposed by ED: %d%n", edDisposedPatients.size());
+        System.out.printf("Avg patients disposed per day: %.2f%n", edDisposedPatients.size() / numDays);
+        System.out.printf("%% Disposed: %.2f%%%n", (edDisposedPatients.size() / (double) totalArrivals) * 100);
 
-        int totalDisposed = edDisposedPatients.size();
-        System.out.println("Total arrivals: " + totalArrivals);
-        System.out.println("Avg arrivals per day: " + (totalArrivals / (double) numDays));
-        System.out.println("Total patients disposed by ED: " + totalDisposed);
-        System.out.println("Avg patients disposed per day: " + (totalDisposed / (double) numDays));
-        System.out.println("% Disposed: " + String.format("%.2f", (totalDisposed / (double) totalArrivals) * 100) + "%");
-        System.out.println("Avg ED Mean Door-to-Provider time: " +
-                Utils.formatMinsToHours(Statistics.calculateMean(this, Simulator.StationName.ED, Statistics.Property.DOOR_TO_PROVIDER_TIME)));
-        System.out.println("Avg ED Mean LOS time: " +
-                Utils.formatMinsToHours(Statistics.calculateMean(this, Simulator.StationName.ED, Statistics.Property.RESPONSE_TIME)));
+        System.out.println("-------------------------------------------");
+        System.out.printf("Avg ED Door-to-Provider time: %s%n",
+            Utils.formatMinsToHours(Statistics.calculateMean(this, Simulator.StationName.ED, Statistics.Property.DOOR_TO_PROVIDER_TIME)));
+        System.out.printf("Avg ED LOS time: %s%n",
+            Utils.formatMinsToHours(Statistics.calculateMean(this, Simulator.StationName.ED, Statistics.Property.RESPONSE_TIME)));
 
+        System.out.println("-------------------------------------------");
         int totalDeaths = Statistics.countDeaths(edDisposedPatients);
-        System.out.println("Total deaths: " + totalDeaths);
-        System.out.println("Death Rate: " + ((double)totalDeaths/totalArrivals)*100.0 +"%");
+        System.out.printf("Total deaths: %d%n", totalDeaths);
+        System.out.printf("Death Rate: %.2f%%%n", ((double) totalDeaths / totalArrivals) * 100.0);
+        System.out.printf("Avg deaths per day: %.2f%n", totalDeaths / numDays);
 
-        System.out.println("Avg deaths per day: " + (totalDeaths / (double) numDays));
+        System.out.println("-------------------------------------------");
         double lwbs = getTotalLWBSPatients();
-        System.out.println("Total LWBS: " + lwbs);
-        System.out.println("Avg LWBS per day: " + (lwbs / (double) numDays));
-        System.out.println("% LWBS: " + String.format("%.2f", (lwbs / (double) totalArrivals) * 100) + "%");
+        System.out.printf("Total LWBS: %.0f%n", lwbs);
+        System.out.printf("Avg LWBS per day: %.2f%n", lwbs / numDays);
+        System.out.printf("%% LWBS: %.2f%%%n", (lwbs / totalArrivals) * 100);
 
+        System.out.println("-------------------------------------------");
         double totalUnprocessedPatients = (
-                sortNurse.queue.size() +
-                        registration.queue.size() +
-                        triage.queue.size() + getTotalPatientsInWaitingAreas()
+            sortNurse.queue.size() +
+            registration.queue.size() +
+            triage.queue.size() + getTotalPatientsInWaitingAreas()
         );
-        System.out.println("Total unprocessed patients in ED: " + totalUnprocessedPatients);
-        System.out.println("Last event time: " + currentTime);
-        System.out.println("Events unprocessed: " + eventList.size());
+        System.out.printf("Total unprocessed patients in ED: %.0f%n", totalUnprocessedPatients);
+        System.out.printf("Last event time: %.2f mins%n", currentTime);
+        System.out.printf("Events unprocessed: %d%n", eventList.size());
+        System.out.println("===========================================");
     }
 
     public void printQuickStats(Simulator.StationName stationName) {
