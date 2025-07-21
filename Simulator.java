@@ -126,11 +126,11 @@ public class Simulator {
             case 8, 22 -> 7.0 / 60.0;
             case 9 -> 10.0 / 60.0;
             case 10 -> 13.0 / 60.0;
-            case 11, 12 -> 14.0 / 60.0;
-            case 13 -> 19.0 / 60.0;  // 1pm
+            case 11, 12 -> 16.0 / 60.0; //11am -1pm
+            case 13 -> 20.0 / 60.0;  // 1-2pm
             case 14, 15 -> 20.0 / 60.0; // 2–3pm
-            case 16 -> 19.0 / 60.0;  // 4pm
-            case 17 -> 14.0 / 60.0;
+            case 16 -> 20.0 / 60.0;  // 4-5pm
+            case 17 -> 19.0 / 60.0; //5-6pm
             case 18, 19 -> 12.0 / 60.0;
             case 20 -> 10.0 / 60.0;
             case 21 -> 9.0 / 60.0;
@@ -146,19 +146,19 @@ public class Simulator {
 
         // Update staff counts
         if (hour >= 0 && hour < 7) {
-            greenZone.setStaffAvailable(4);
+            greenZone.setStaffAvailable(3);
             redZone.setStaffAvailable(4);
-            fastTrackZone.setStaffAvailable(2);
-            eruZone.setStaffAvailable(2);
+            fastTrackZone.setStaffAvailable(1);
+            eruZone.setStaffAvailable(1);
         } else if (hour >= 7 && hour < 15) {
-            greenZone.setStaffAvailable(4);
-            redZone.setStaffAvailable(5);
-            fastTrackZone.setStaffAvailable(3);
+            greenZone.setStaffAvailable(3);
+            redZone.setStaffAvailable(4);
+            fastTrackZone.setStaffAvailable(1);
             eruZone.setStaffAvailable(4);
         } else {
-            greenZone.setStaffAvailable(4);
-            redZone.setStaffAvailable(5);
-            fastTrackZone.setStaffAvailable(3);
+            greenZone.setStaffAvailable(3);
+            redZone.setStaffAvailable(3);
+            fastTrackZone.setStaffAvailable(2);
             eruZone.setStaffAvailable(2);
         }
 
@@ -280,7 +280,7 @@ public class Simulator {
 
     public static void main(String[] args) {
         Simulator sim = new Simulator();
-        sim.runForDays(30);
+        sim.runForDays(365);
         sim.printQuickStats(new Simulator.StationName[]{Simulator.StationName.ED, Simulator.StationName.SORT,
                 Simulator.StationName.REGISTRATION, Simulator.StationName.TRIAGE,
                 Simulator.StationName.FAST_TRACK, Simulator.StationName.RED,

@@ -6,10 +6,10 @@ public class Zone extends ServiceStation {
     private Simulator.StationName zoneName;
 
     //beds and staff treatment handling
-    private Queue<Patient> waitingForStaff;  // patients admitted to a bed but waiting for staff
-    private int maxStaffAvailable;
-    private int activeTreatments = 0;
-    private int busyBeds = 0; //occupied beds
+    protected Queue<Patient> waitingForStaff;  // patients admitted to a bed but waiting for staff
+    protected int maxStaffAvailable;
+    protected int activeTreatments = 0;
+    protected int busyBeds = 0; //occupied beds
 
     public Zone(Simulator.StationName zoneName, Simulator simulator) {
         super(zoneName, 4, 1.0, getZoneCapacity(zoneName), simulator);

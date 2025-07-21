@@ -34,6 +34,34 @@ public class Triage extends Zone {
     public ServiceStation getPrecedingStation() {
         return simulator.registration;
     }
+
+    @Override
+    public void departServiceStation(Event currentEvent) {
+        Patient patient = currentEvent.patient;
+        double currentTime = currentEvent.eventTime;
+
+        setPatientDepartureTime(patient, currentTime);
+        departedPatients.add(patient);
+
+        activeTreatments--;
+        busyBeds--;
+
+        sendToAppropriateNextStation(currentEvent);
+
+        // If patients are waiting for beds, move one into bed
+        if (!queue.isEmpty()) {
+            Patient next = queue.poll();
+            busyBeds++;
+            waitingForStaff.add(next);
+            if (debug == 1) {
+                System.out.println("[Triage] Patient " + next.id + " got bed after departure @T: " + currentTime);
+            }
+        }
+
+        // Fill available staff slots
+        attemptToStartTreatmentForAll(currentTime);
+    }
+
     @Override
     protected void sendToAppropriateNextStation(Event currentEvent) {
             int ESI = currentEvent.patient.ESILevel;
@@ -50,14 +78,14 @@ public class Triage extends Zone {
                 //divide esi 3 patients between red and green zone
             else if (ESI == 3){
                 double r = Math.random();
-                if(r<0.70){
+                if(r<0.50){
                     targetZone = simulator.redZone;
                 } else targetZone = simulator.greenZone;
             }
 
             else if (ESI == 4){
                 double r = Math.random();
-                if(r<0.7){
+                if(r<0.4){
                     targetZone = simulator.greenZone;
                 } else targetZone = simulator.fastTrackZone;
             }
