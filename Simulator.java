@@ -7,10 +7,10 @@ public class Simulator {
     double dayEnd = 24 * 60; // 24 hours in minutes
     double numDays = 1; // default to 1 day for simulation
     double simulationEndTime;
-    int warmUpDays = 10;   // number of days to ignore as warm-up
+    int warmUpDays = 30;   // number of days to ignore as warm-up
     double warmUpEndTime; // cutoff time in minutes (warmUpDays * 24 * 60)
     double lwbsReevaluationPeriod = 30; // minutes after which patients re-evaluate their LWBS decision
-
+    static boolean enableVariableEDArrivalRate = false; // whether to use variable arrival rates based on time of day
 
     // event calendar
     PriorityQueue<Event> eventList;
@@ -115,6 +115,9 @@ public class Simulator {
 
     // dynamic arrival time
     public static double getArrivalRateByTime(double currentTime) {
+        if (!enableVariableEDArrivalRate) {
+            return 10.0 / 60.0; 
+        }
         int hour = (int) ((currentTime / 60.0) % 24);
 
         // scaled rush hour 1–5pm (13–16) for higher patient load
@@ -285,11 +288,17 @@ public class Simulator {
 
     public static void main(String[] args) {
         Simulator sim = new Simulator();
-        sim.runForDays(30);
-        sim.printQuickStats(new Simulator.StationName[]{Simulator.StationName.ED, Simulator.StationName.SORT,
-                Simulator.StationName.REGISTRATION, Simulator.StationName.TRIAGE,
-                Simulator.StationName.FAST_TRACK, Simulator.StationName.RED,
-                Simulator.StationName.GREEN, Simulator.StationName.ERU});
+        sim.runForDays(356);
+        sim.printQuickStats(new Simulator.StationName[]{
+            Simulator.StationName.ED, 
+            Simulator.StationName.SORT,
+            // Simulator.StationName.REGISTRATION, 
+            // Simulator.StationName.TRIAGE,
+            // Simulator.StationName.FAST_TRACK,
+            // Simulator.StationName.RED,
+            // Simulator.StationName.GREEN,
+            // Simulator.StationName.ERU
+        });
         // sim.printDisposedPatientsLWBSProb(10);
     }
 }
