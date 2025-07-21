@@ -68,6 +68,9 @@ public class Zone extends ServiceStation {
         setPatientArrivalTime(patient, currentTime);
         patient.currentStationName = this.stationName;
 
+        totalArrivals++;
+
+
         // admit if a bed is available
         if (busyBeds < numBeds) {
             busyBeds++;
