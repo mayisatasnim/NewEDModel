@@ -62,10 +62,10 @@ public class Simulator {
         sortNurse.setServiceTime(4, 1);
         registration.setServiceTime(5, 1);
         triage.setServiceTime(13, 2);
-        eruZone.setServiceTime(134, 30);
-        redZone.setServiceTime(192, 30);
-        greenZone.setServiceTime(200, 30);
-        fastTrackZone.setServiceTime(129, 30);
+        eruZone.setServiceTime(168, 30);
+        redZone.setServiceTime(247, 30);
+        greenZone.setServiceTime(251, 30);
+        fastTrackZone.setServiceTime(144, 30);
     }
 
     public void begin() {
@@ -138,23 +138,31 @@ public class Simulator {
     public void staff(double currentTime) {
         int hour = (int) ((currentTime / 60.0) % 24);
 
+        // Update staff counts
         if (hour >= 0 && hour < 7) {
-            redZone.setStaffAvailable(13);
-            greenZone.setStaffAvailable(10);
-            fastTrackZone.setStaffAvailable(5);
-            eruZone.setStaffAvailable(4);
-        } else if (hour >= 7 && hour < 15) {
-            redZone.setStaffAvailable(13);
-            greenZone.setStaffAvailable(10);
-            fastTrackZone.setStaffAvailable(5);
-            eruZone.setStaffAvailable(4);
-        } else {
-            redZone.setStaffAvailable(8);
-            greenZone.setStaffAvailable(6);
+            greenZone.setStaffAvailable(16);
+            redZone.setStaffAvailable(17);
             fastTrackZone.setStaffAvailable(3);
-            eruZone.setStaffAvailable(2);
+            eruZone.setStaffAvailable(3);
+        } else if (hour >= 7 && hour < 15) {
+            greenZone.setStaffAvailable(18);
+            redZone.setStaffAvailable(20);
+            fastTrackZone.setStaffAvailable(4);
+            eruZone.setStaffAvailable(5);
+        } else {
+            greenZone.setStaffAvailable(18);
+            redZone.setStaffAvailable(20);
+            fastTrackZone.setStaffAvailable(5);
+            eruZone.setStaffAvailable(6);
         }
+
+        //attempt treatment w/ updated staff
+        greenZone.attemptToStartTreatmentForAll(currentTime);
+        redZone.attemptToStartTreatmentForAll(currentTime);
+        fastTrackZone.attemptToStartTreatmentForAll(currentTime);
+        eruZone.attemptToStartTreatmentForAll(currentTime);
     }
+
 
     //used to get patients after warm up stage
     public void addDisposedPatient(Patient patient) {
@@ -196,6 +204,8 @@ public class Simulator {
 
         int totalDeaths = Statistics.countDeaths(edDisposedPatients);
         System.out.println("Total deaths: " + totalDeaths);
+        System.out.println("Death Rate: " + (double) totalDeaths/totalArrivals +"%");
+
         System.out.println("Avg deaths per day: " + (totalDeaths / (double) numDays));
         double lwbs = getTotalLWBSPatients();
         System.out.println("Total LWBS: " + lwbs);
