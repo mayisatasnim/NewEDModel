@@ -62,10 +62,10 @@ public class Simulator {
         sortNurse.setServiceTime(4, 2);
         registration.setServiceTime(3, 2);
         triage.setServiceTime(5, 2);
-        eruZone.setServiceTime(161, 30);
-        redZone.setServiceTime(105, 30);
-        greenZone.setServiceTime(117, 30);
-        fastTrackZone.setServiceTime(30, 10);
+        eruZone.setServiceTime(76, 42);
+        redZone.setServiceTime(48, 27);
+        greenZone.setServiceTime(27, 15);
+        fastTrackZone.setServiceTime(18, 11);
     }
 
     public void begin() {
@@ -136,8 +136,6 @@ public class Simulator {
 
     }
 
-
-
     // dynamic staffing
     public void staff(double currentTime) {
         int hour = (int) ((currentTime / 60.0) % 24);
@@ -149,15 +147,15 @@ public class Simulator {
             fastTrackZone.setStaffAvailable(2);
             eruZone.setStaffAvailable(2);
         } else if (hour >= 7 && hour < 15) {
-            greenZone.setStaffAvailable(5);
-            redZone.setStaffAvailable(6);
-            fastTrackZone.setStaffAvailable(3);
-            eruZone.setStaffAvailable(3);
-        } else {
-            greenZone.setStaffAvailable(5);
-            redZone.setStaffAvailable(6);
+            greenZone.setStaffAvailable(4);
+            redZone.setStaffAvailable(5);
             fastTrackZone.setStaffAvailable(3);
             eruZone.setStaffAvailable(4);
+        } else {
+            greenZone.setStaffAvailable(4);
+            redZone.setStaffAvailable(5);
+            fastTrackZone.setStaffAvailable(3);
+            eruZone.setStaffAvailable(2);
         }
 
         //attempt treatment w/ updated staff
