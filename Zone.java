@@ -5,12 +5,11 @@ public class Zone extends ServiceStation {
     private List<Patient> edDisposedPatients;
     private Simulator.StationName zoneName;
 
-
-
-    //admitted but waiting for treatment
+    //beds and staff treatment handling
     private Queue<Patient> waitingForStaff;  // patients admitted to a bed but waiting for staff
     private int maxStaffAvailable;
     private int activeTreatments = 0;
+    private int busyBeds = 0; //occupied beds
 
     public Zone(Simulator.StationName zoneName, Simulator simulator) {
         super(zoneName, 4, 1.0, getZoneCapacity(zoneName), simulator);
@@ -24,12 +23,11 @@ public class Zone extends ServiceStation {
         switch (zoneName) {
             case ERU: return 14;
             case FAST_TRACK: return 43;
-            case RED: return 29;
-            case GREEN: return 32;
+            case RED: return 88;
+            case GREEN: return 47;
             default: return 1;
         }
     }
-
 
     @Override
     protected void setPatientArrivalTime(Patient patient, double time) {
@@ -62,29 +60,115 @@ public class Zone extends ServiceStation {
         this.maxStaffAvailable = staffCount;
     }
 
-    // @Override
-    // protected void scheduleNextDeparture(double currentTime) {
-    //     if ((patient.ESILevel == 1) && serviceTime > 360) {
-    //         patient.died = true;
-    //         patient.deathTime = currentTime + 360;
+    @Override
+    public void addPatient(Event currentEvent) {
+        Patient patient = currentEvent.patient;
+        double currentTime = currentEvent.eventTime;
 
-    //         if (!patient.isCountedDisposed) {
-    //             simulator.addDisposedPatient(patient);
-    //         }
+        setPatientArrivalTime(patient, currentTime);
+        patient.currentStationName = this.stationName;
+
+        // admit if a bed is available
+        if (busyBeds < numBeds) {
+            busyBeds++;
+            waitingForStaff.add(patient);
+            attemptToStartTreatment(patient, currentTime);
+        } else {
+            //add to queue if there are no beds
+            queue.add(patient);
+
+            if (debug == 1) {
+                System.out.println("[" + stationName + "] Patient " + patient.id + " queued for bed @T: " + currentTime);
+            }
+        }
+    }
+
+    //start treatment
+    private void attemptToStartTreatment(Patient patient, double currentTime) {
+        if (activeTreatments < maxStaffAvailable && waitingForStaff.contains(patient)) {
+
+            //begin treatment
+            waitingForStaff.remove(patient);
+            setPatientProcessingTime(patient, currentTime);
+
+            double serviceTime = Utils.getNormal(meanServiceTime, serviceStdDev);
+            double nextDeparture = currentTime + serviceTime;
+            eventList.add(new Event(nextDeparture, getDepartureEventType(), patient));
+            activeTreatments++;
+
+            if (debug == 1) {
+                System.out.println("[" + stationName + "]: Started treatment for " + patient.id + " @T: " + currentTime + ", departs @T: " + nextDeparture);
+            }
+        }
+    }
+
+    //fill staff slots from queue
+    public void attemptToStartTreatmentForAll(double currentTime) {
+        while (!waitingForStaff.isEmpty() && activeTreatments < maxStaffAvailable) {
+            attemptToStartTreatment(waitingForStaff.peek(), currentTime);
+        }
+    }
+
+    // free bed + staff, and treat next
+    @Override
+    public void departServiceStation(Event currentEvent) {
+        Patient patient = currentEvent.patient;
+        double currentTime = currentEvent.eventTime;
 
 
-    //         if (debug == 1) {
-    //             System.out.println("[Death] " + patient.id + " died during treatment in " + stationName + " @T: " + patient.deathTime);
-    //         }
-    //         return; //no normal departure
-    //     }
 
-    //     double nextDepartureTime = currentTime + serviceTime;
-    //     eventList.add(new Event(nextDepartureTime, getDepartureEventType(), patient));
-    //     if (debug == 1) {
-    //         System.out.println("[" + stationName + "]: Next departure for " + patient.id + ": " + nextDepartureTime);
-    //     }
-    // }
+        // unrealistic to assume ESI 1 patients are dying while waiting since treatment should immediately start
+        if (patient.ESILevel >= 1 && patient.ESILevel <= 3) {
+            double baseRisk;
+            if (patient.ESILevel == 1) baseRisk = 0.015;
+            else if (patient.ESILevel == 2) baseRisk = 0.008;
+            else baseRisk = 0.002;
+
+            double timeInTreatment = currentTime - patient.zonePT;
+            double waitBeforeTreatment = patient.zonePT - patient.zoneAT;
+
+            double treatmentFactor = Math.min(1.0, timeInTreatment / 150.0);  // 2.5 hours
+            double delayFactor = Math.min(1.0, waitBeforeTreatment / 360.0); // 6 hours
+
+            double combinedRisk = baseRisk * (0.6 * treatmentFactor + 0.4 * delayFactor);
+
+            if (Math.random() < combinedRisk) {
+                patient.died = true;
+                patient.deathTime = currentTime;
+                activeTreatments--;
+                busyBeds--;
+                if (!patient.isCountedDisposed) simulator.addDisposedPatient(patient);
+                if (debug == 1) {
+                    System.out.printf("[Death] %d (ESI %d) died during treatment\n",
+                            patient.id, patient.ESILevel, stationName, currentTime, combinedRisk);
+                }
+                return;
+            }
+        }
+
+
+
+        setPatientDepartureTime(patient, currentTime);
+        departedPatients.add(patient);
+
+        activeTreatments--;
+        busyBeds--;
+
+        sendToAppropriateNextStation(currentEvent);
+
+        // if patients are waiting for beds, move one into bed
+        if (!queue.isEmpty()) {
+            Patient next = queue.poll();
+            busyBeds++;
+            waitingForStaff.add(next);
+            if (debug == 1) {
+                System.out.println("[" + stationName + "] Patient " + next.id + " got bed after departure @T: " + currentTime);
+            }
+        }
+
+        //try to fill any available staff slots
+        attemptToStartTreatmentForAll(currentTime);
+    }
 
     @Override
     protected double getPatientArrivalTime(Patient patient) {
@@ -111,7 +195,6 @@ public class Zone extends ServiceStation {
         return count;
     }
 
-
     public void printQuickStats() {
         super.printQuickStats();
         System.out.println("Total deaths in zone: " + countDeaths());
@@ -120,7 +203,6 @@ public class Zone extends ServiceStation {
         System.out.println("Avg LWBS per day: " + (countLWBS() / (double) simulator.numDays));
         System.out.println("Patients in bed waiting for staff: " + waitingForStaff.size());
         System.out.println("Active treatments: " + activeTreatments + "/" + maxStaffAvailable);
+        System.out.println("Busy beds: " + busyBeds + "/" + numBeds);
     }
-
-
 }
