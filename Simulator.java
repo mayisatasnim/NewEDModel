@@ -117,8 +117,7 @@ public class Simulator {
     public static double getArrivalRateByTime(double currentTime) {
         int hour = (int) ((currentTime / 60.0) % 24);
 
-        //rush hour scaling between 1-5
-
+        // scaled rush hour 1–5pm (13–16) for higher patient load
         return switch (hour) {
             case 0, 7 -> 5.0 / 60.0;
             case 1 -> 4.5 / 60.0;
@@ -126,17 +125,20 @@ public class Simulator {
             case 2, 4, 5, 6 -> 4.0 / 60.0;
             case 8, 22 -> 7.0 / 60.0;
             case 9 -> 10.0 / 60.0;
-            case 10, 14, 15, 16 -> 13.0 / 60.0;
-            case 11, 12, 13 -> 14.0 / 60.0;
-            case 17 -> 12.0 / 60.0;
-            case 18, 19 -> 11.0 / 60.0;
-            case 20 -> 9.0 / 60.0;
-            case 21 -> 8.0 / 60.0;
+            case 10 -> 13.0 / 60.0;
+            case 11, 12 -> 14.0 / 60.0;
+            case 13 -> 18.0 / 60.0;  // 1pm
+            case 14, 15 -> 20.0 / 60.0; // 2–3pm
+            case 16 -> 18.0 / 60.0;  // 4pm
+            case 17 -> 14.0 / 60.0;
+            case 18, 19 -> 12.0 / 60.0;
+            case 20 -> 10.0 / 60.0;
+            case 21 -> 9.0 / 60.0;
             case 23 -> 6.0 / 60.0;
             default -> 10.0 / 60.0;
         };
-
     }
+
 
     // dynamic staffing
     public void staff(double currentTime) {
