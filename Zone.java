@@ -60,6 +60,26 @@ public class Zone extends ServiceStation {
         this.maxStaffAvailable = staffCount;
     }
 
+    public void queuePatientFromAnotherStation(Event currentEvent) {
+        Patient patient = currentEvent.patient;
+        double currentTime = currentEvent.eventTime;
+
+        setPatientArrivalTime(patient, currentTime); // optional if Zone-specific time needed
+        patient.currentStationName = stationName;
+        totalArrivals++;
+
+        // if bed is available
+        if (busyBeds < numBeds) {
+            busyBeds++;
+            waitingForStaff.add(patient);
+        } else {
+            queue.add(patient);
+        }
+
+        // attempt to begin treatment if staff is available
+        attemptToStartTreatmentForAll(currentTime);
+    }
+
     @Override
     public void addPatient(Event currentEvent) {
         Patient patient = currentEvent.patient;

@@ -85,6 +85,8 @@ public class Simulator {
                     case sortDeparture:
                     case registerDeparture:
                     case triageDeparture:
+                        getStationByName(currentEvent.patient.currentStationName).departServiceStation(currentEvent);
+                        break;
                     case zoneDeparture:
                         getStationByName(currentEvent.patient.currentStationName).departServiceStation(currentEvent);
                         break;
@@ -161,6 +163,8 @@ public class Simulator {
         redZone.attemptToStartTreatmentForAll(currentTime);
         fastTrackZone.attemptToStartTreatmentForAll(currentTime);
         eruZone.attemptToStartTreatmentForAll(currentTime);
+        triage.attemptToStartTreatmentForAll(currentTime);
+
     }
 
 
@@ -272,7 +276,7 @@ public class Simulator {
 
     public static void main(String[] args) {
         Simulator sim = new Simulator();
-        sim.runForDays(365);
+        sim.runForDays(1);
         sim.printQuickStats(new Simulator.StationName[]{Simulator.StationName.ED, Simulator.StationName.SORT,
                 Simulator.StationName.REGISTRATION, Simulator.StationName.TRIAGE,
                 Simulator.StationName.FAST_TRACK, Simulator.StationName.RED,
