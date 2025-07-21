@@ -76,24 +76,23 @@ public class Patient {
         return patientType;
     }
 
-    public int inferESILevel(String arrivalMode){
+    public int inferESILevel(String arrivalMode) {
         double r = Math.random(); // gets a number between 0 and 1
 
         if (arrivalMode.equals("Walk-in")) {
-            if (r < 0.05) return 1;       // 5% ESI 1
-            else if (r < 0.15) return 2;  // 10% ESI 2
-            else if (r < 0.45) return 3;  // 30% ESI 3
-            else if (r < 0.75) return 4;  // 30% ESI 4
-            else return 5;               // 25% ESI 5
+            if (r < 0.02) return 1;       // 1% ESI 1
+            else if (r < 0.20) return 2;  // 18% ESI 2
+            else if (r < 0.66) return 3;  // 46% ESI 3
+            else if (r < 0.97) return 4;  // 31% ESI 4
+            else return 5;               // 3% ESI 5
 
         } else {
-            if (r < 0.25) return 1;       // 25% ESI 1
-            else if (r < 0.50) return 2;  // 25% ESI 2
-            else if (r < 0.75) return 3;  // 15% ESI 3
-            else if (r < 0.90) return 4;  // 15% ESI 4
-            else return 5;               // 5 ESI 5
+            if (r < 0.05) return 1;       // 5% ESI 1
+            else if (r < 0.30) return 2;  // 25% ESI 2
+            else if (r < 0.70) return 3;  // 40% ESI 3
+            else if (r < 0.99) return 4;  // 29% ESI 4
+            else return 5;               // 3% ESI 5
         }
-
     }
 
     public String inferAcuity(int ESILevel){
@@ -198,3 +197,4 @@ public class Patient {
         }
     }
 }
+
