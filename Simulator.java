@@ -7,7 +7,7 @@ public class Simulator {
     double dayEnd = 24 * 60; // 24 hours in minutes
     double numDays = 1; // default to 1 day for simulation
     double simulationEndTime;
-    int warmUpDays = 30;   // number of days to ignore as warm-up
+    int warmUpDays = 10;   // number of days to ignore as warm-up
     double warmUpEndTime; // cutoff time in minutes (warmUpDays * 24 * 60)
     double lwbsReevaluationPeriod = 30;
 
@@ -278,7 +278,7 @@ public class Simulator {
 
     public static void main(String[] args) {
         Simulator sim = new Simulator();
-        sim.runForDays(365);
+        sim.runForDays(30);
         sim.printQuickStats(new Simulator.StationName[]{Simulator.StationName.ED, Simulator.StationName.SORT,
                 Simulator.StationName.REGISTRATION, Simulator.StationName.TRIAGE,
                 Simulator.StationName.FAST_TRACK, Simulator.StationName.RED,

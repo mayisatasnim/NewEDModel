@@ -99,6 +99,13 @@ public abstract class ServiceStation extends Metrics {
         computeMetrics();
         System.out.println("\n[" + stationName + "]: Quick Stats");
         System.out.println("Total arrivals: " + totalArrivals);
+        System.out.println("% Arrivals rel to ED: " + String.format("%.2f", (totalArrivals * 100.0 / simulator.totalArrivals)) + "%");
+        if(stationName != Simulator.StationName.SORT) {
+            System.out.println("% Arrivals rel to " + getPrecedingStation().stationName + " output: " + String.format("%.2f", (totalArrivals * 100.0 / getPrecedingStation().totalArrivals)) + "%");
+        }
+        if(stationName == Simulator.StationName.ERU) {
+            System.out.println("% Arrivals rel to SORT: " + String.format("%.2f", (totalArrivals * 100.0 / simulator.sortNurse.totalArrivals)) + "%");
+        }
         System.out.println("Total processed: " + departedPatients.size());
         System.out.println("Avg arrivals per day: " + (totalArrivals / (double) simulator.numDays));
 
@@ -131,4 +138,5 @@ public abstract class ServiceStation extends Metrics {
     protected abstract Event.EventType getDepartureEventType();
     protected abstract void sendToAppropriateNextStation(Event currentEvent);
     protected abstract double getPatientArrivalTime(Patient patient);
+    protected abstract ServiceStation getPrecedingStation();
 }

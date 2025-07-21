@@ -42,4 +42,9 @@ public class SortNurse extends ServiceStation {
     protected double getPatientArrivalTime(Patient patient) {
         return patient.sortingAT;
     }
+
+    @Override
+    public ServiceStation getPrecedingStation() {
+        return null;
+    }
 }

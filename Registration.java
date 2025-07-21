@@ -33,4 +33,9 @@ public class Registration extends ServiceStation {
     protected double getPatientArrivalTime(Patient patient) {
         return patient.registrationAT;
     }
+
+    @Override
+    public ServiceStation getPrecedingStation() {
+        return simulator.sortNurse;
+    }
 }
