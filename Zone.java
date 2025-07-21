@@ -153,7 +153,7 @@ public class Zone extends ServiceStation {
             double waitBeforeTreatment = patient.zonePT - patient.zoneAT;
 
             double treatmentFactor = Math.min(1.0, timeInTreatment / 150.0);  // 2.5 hours
-            double delayFactor = Math.min(1.0, waitBeforeTreatment / 360.0); // 6 hours
+            double delayFactor = Math.min(1.0, waitBeforeTreatment / 240.0); // 4 hours
 
             double combinedRisk = baseRisk * (0.6 * treatmentFactor + 0.4 * delayFactor);
 
