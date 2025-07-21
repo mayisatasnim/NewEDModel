@@ -95,7 +95,6 @@ public abstract class ServiceStation extends Metrics {
 
     }
 
-
     public void printQuickStats() {
         computeMetrics();
         System.out.println("\n[" + stationName + "]: Quick Stats");
@@ -107,7 +106,7 @@ public abstract class ServiceStation extends Metrics {
         System.out.println("[R]Mean " + stationName + " waiting time: " + Utils.formatMinsToHours(realMeanWaitingTime));
         System.out.println("[R]Mean " + stationName + " service time: " + Utils.formatMinsToHours(realMeanServiceTime));
         System.out.println("[E]Mean " + stationName + " service time: " + Utils.formatMinsToHours(meanServiceTime));
-        System.out.println("[R]Mean " + stationName + " LOS[ResponseTime]: " + Utils.formatMinsToHours(realResponseTime));
+        System.out.println("[R]Mean " + stationName + " LOS [ResponseTime]: " + Utils.formatMinsToHours(realResponseTime));
         System.out.println("[R]Mean " + stationName + " Inter-Arrival Time: " + Utils.formatMinsToHours(realMeanInterArrivalTime));
     }
 

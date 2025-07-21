@@ -29,17 +29,29 @@ public class Triage extends ServiceStation {
     }
     @Override
     protected void sendToAppropriateNextStation(Event currentEvent) {
-        // use bell curve to send patients to appropriate zones based on their acuity
         int ESI = currentEvent.patient.ESILevel;
 
         //assign zone based on acuity and esi
         Zone targetZone;
-        if (ESI == 1) targetZone = simulator.eruZone;
-        else if (ESI == 2) targetZone = simulator.redZone;
-        else if (ESI == 3) targetZone = simulator.redZone;
-        else if (ESI == 4) targetZone = simulator.greenZone;
-        else targetZone = simulator.fastTrackZone;
 
+        //high
+        if (ESI == 1) targetZone = simulator.eruZone;
+
+            //moderate and low acuity
+        else if (ESI == 2) targetZone = simulator.redZone;
+
+            //divide esi 3 patients between red and green zone
+        else if (ESI == 3){
+            double r = Math.random();
+            if(r<0.70){
+                targetZone = simulator.redZone;
+            } else targetZone = simulator.greenZone;
+        }
+
+        else if (ESI == 4) targetZone = simulator.greenZone;
+
+            //fast track
+        else targetZone = simulator.fastTrackZone;
 
         targetZone.addPatient(currentEvent);
 

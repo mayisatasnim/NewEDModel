@@ -10,14 +10,20 @@ public abstract class Statistics{
     }
     public static double calculateMean(List<Patient> patients, Simulator.StationName stage, Property property) {
         double sum = 0.0;
-        int count = patients.size();
+        int count = patients.size(); //this includes all patients
+
+        int treatedCount = 0;
+
         if(property == Property.INTER_ARRIVAL_TIME && count >= 1) {
+            if (count < 2) return 0.0;
             sum = totalInterArrivalTime(patients, stage);
-            return sum / count;
+            return sum / (count - 1);
         }
+
         for (Patient p : patients) {
             //skip patients that lwbs and death
             if (p.hasLWBS || p.died) continue;
+            treatedCount++;
 
             double value = 0.0;
             switch (stage) {
@@ -103,7 +109,9 @@ public abstract class Statistics{
             }
             sum += value;
         }
-        return count > 0 ? sum / count : 0.0;
+        return treatedCount > 0 ? sum / treatedCount : 0.0;
+
+       // return count > 0 ? sum / count : 0.0;
     }
     public static double totalInterArrivalTime(List<Patient> patients, Simulator.StationName stage) {
         if (patients == null || patients.size() <= 1) return 0.0;
