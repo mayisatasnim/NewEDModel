@@ -149,7 +149,7 @@ public class Simulator {
 
         // Update staff counts
        if (hour >= 0 && hour < 7) {
-            greenZone.setStaffAvailable(3);
+            greenZone.setStaffAvailable(2);
             redZone.setStaffAvailable(2);
             fastTrackZone.setStaffAvailable(1);
             eruZone.setStaffAvailable(1);
@@ -291,14 +291,14 @@ public class Simulator {
         Simulator sim = new Simulator();
         sim.runForDays(356);
         sim.printQuickStats(new Simulator.StationName[]{
-            Simulator.StationName.ED, 
-            Simulator.StationName.SORT,
-            // Simulator.StationName.REGISTRATION, 
-            // Simulator.StationName.TRIAGE,
-            // Simulator.StationName.FAST_TRACK,
-            // Simulator.StationName.RED,
-            // Simulator.StationName.GREEN,
-            // Simulator.StationName.ERU
+            Simulator.StationName.ED,
+                // Simulator.StationName.SORT,
+            // Simulator.StationName.REGISTRATION,
+           // Simulator.StationName.TRIAGE,
+            Simulator.StationName.FAST_TRACK,
+            Simulator.StationName.RED,
+            Simulator.StationName.GREEN,
+            Simulator.StationName.ERU
         });
         // sim.printDisposedPatientsLWBSProb(10);
     }
