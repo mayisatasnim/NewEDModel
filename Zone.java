@@ -23,8 +23,8 @@ public class Zone extends ServiceStation {
         switch (zoneName) {
             case ERU: return 14;
             case FAST_TRACK: return 43;
-            case RED: return 88;
-            case GREEN: return 47;
+            case RED: return 74;
+            case GREEN: return 32;
             default: return 1;
         }
     }
