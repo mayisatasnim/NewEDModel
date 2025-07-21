@@ -11,7 +11,7 @@ public abstract class ServiceStation extends Metrics {
     protected double serviceStdDev;
     protected WaitingArea queue;
     protected List<Patient> departedPatients;
-    protected List<Patient> arrivedPatients;
+    protected TreeSet<Patient> arrivedPatients; // Changed to TreeSet for automatic sorting
     protected List<Patient> lwbsPatients;
     protected PriorityQueue<Event> eventList;
     protected Simulator simulator;
@@ -28,7 +28,7 @@ public abstract class ServiceStation extends Metrics {
 
         this.queue = new WaitingArea(WaitingArea.PrioritizationPolicy.HIGHER_ACUITY_FIRST);
         this.departedPatients = new ArrayList<>();
-        this.arrivedPatients = new ArrayList<>();
+        this.arrivedPatients = new TreeSet<>(getArrivalTimeComparator());
         this.lwbsPatients = new ArrayList<>();
         this.eventList = simulator.eventList;
         this.simulator = simulator;
@@ -42,11 +42,13 @@ public abstract class ServiceStation extends Metrics {
     public void addPatient(Event currentEvent) {
         Patient patient = currentEvent.patient;
         queue.add(patient);
+        
+        // CRITICAL: Set arrival time BEFORE adding to TreeSet so sorting works correctly!
+        setPatientArrivalTime(patient, currentEvent.eventTime);
         arrivedPatients.add(patient);
         totalArrivals++;
         updatePatientLocation(patient);
         patient.scheduleDecideToLWBS(simulator);
-        setPatientArrivalTime(patient, currentEvent.eventTime);
         setPatientDepartureTime(patient, Double.POSITIVE_INFINITY);
 
         if (debug == 1) {
@@ -95,6 +97,76 @@ public abstract class ServiceStation extends Metrics {
 
     }
 
+    public double getArrivalTime(Patient patient) {
+        return switch(stationName) {
+            case ED, SORT -> patient.sortingAT;
+            case REGISTRATION -> patient.registrationAT;
+            case TRIAGE -> patient.triageAT;
+            case ZONE, ERU, FAST_TRACK, RED, GREEN, BLUE -> patient.zoneAT;
+            default -> patient.sortingAT;
+        };
+    }
+
+    public double getProcessingTime(Patient patient) {
+        return switch(stationName) {
+            case ED, SORT -> patient.sortingPT;
+            case REGISTRATION -> patient.registrationPT;
+            case TRIAGE -> patient.triagePT;
+            case ZONE, ERU, FAST_TRACK, RED, GREEN, BLUE -> patient.zonePT;
+            default -> patient.sortingPT;
+        };
+    }
+
+    public double getDepartureTime(Patient patient) {
+        return switch(stationName) {
+            case ED, SORT -> patient.sortingDT;
+            case REGISTRATION -> patient.registrationDT;
+            case TRIAGE -> patient.triageDT;
+            case ZONE, ERU, FAST_TRACK, RED, GREEN, BLUE -> patient.zoneDT;
+            default -> patient.sortingDT;
+        };
+    }
+
+    public double getWaitingTime(Patient patient) {
+        return getDepartureTime(patient) - getProcessingTime(patient);
+    }
+
+    public double getResponseTime(Patient patient) {
+        return getDepartureTime(patient) - getArrivalTime(patient);
+    }
+    
+    public double totalInterArrivalTime() {
+        if (arrivedPatients.size() <= 1) return 0.0;
+
+        double sum = 0.0;
+        Patient previous = null;
+        
+        // TreeSet iteration is already in sorted order!
+        for (Patient current : arrivedPatients) {
+            if (previous != null) {
+                double currentTime = getArrivalTime(current);
+                double previousTime = getArrivalTime(previous);
+                sum += currentTime - previousTime;
+            }
+            previous = current;
+        }
+        
+        return sum;
+    }
+
+    public Comparator<Patient> getArrivalTimeComparator() {
+        return (p1, p2) -> {
+            double time1 = getArrivalTime(p1);
+            double time2 = getArrivalTime(p2);
+            int timeCompare = Double.compare(time1, time2);
+            
+            // If arrival times are equal, compare by registration number to maintain order
+            if (timeCompare == 0) {
+                return Integer.compare(p1.regNo, p2.regNo);
+            }
+            return timeCompare;
+        };
+    }
     public void printQuickStats() {
         computeMetrics();
         System.out.println("\n[" + stationName + "]: Quick Stats");
@@ -120,10 +192,10 @@ public abstract class ServiceStation extends Metrics {
     }
 
     public void computeMetrics() {
-        realMeanWaitingTime = Statistics.calculateMean(departedPatients, stationName, Statistics.Property.WAITING_TIME);
-        realMeanServiceTime = Statistics.calculateMean(departedPatients, stationName, Statistics.Property.PROCESSING_TIME);
-        realResponseTime = Statistics.calculateMean(departedPatients, stationName, Statistics.Property.RESPONSE_TIME);
-        realMeanInterArrivalTime = Statistics.calculateMean(arrivedPatients, stationName, Statistics.Property.INTER_ARRIVAL_TIME);
+        realMeanWaitingTime = Statistics.calculateMean(simulator, stationName, Statistics.Property.WAITING_TIME);
+        realMeanServiceTime = Statistics.calculateMean(simulator, stationName, Statistics.Property.PROCESSING_TIME);
+        realResponseTime = Statistics.calculateMean(simulator, stationName, Statistics.Property.RESPONSE_TIME);
+        realMeanInterArrivalTime = Statistics.calculateMean(simulator, stationName, Statistics.Property.INTER_ARRIVAL_TIME);
         totalProcessed = departedPatients.size(); // (X) - Throughput
         currentQueueSize = queue.size(); // (NQ) - Current Queue Size
         realServiceRate = (realMeanServiceTime > 0) ? 1.0 / realMeanServiceTime : 0;

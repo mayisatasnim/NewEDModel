@@ -9,7 +9,7 @@ public class Simulator {
     double simulationEndTime;
     int warmUpDays = 10;   // number of days to ignore as warm-up
     double warmUpEndTime; // cutoff time in minutes (warmUpDays * 24 * 60)
-    double lwbsReevaluationPeriod = 30;
+    double lwbsReevaluationPeriod = 30; // minutes after which patients re-evaluate their LWBS decision
 
 
     // event calendar
@@ -206,9 +206,9 @@ public class Simulator {
         System.out.println("Avg patients disposed per day: " + (totalDisposed / (double) numDays));
         System.out.println("% Disposed: " + String.format("%.2f", (totalDisposed / (double) totalArrivals) * 100) + "%");
         System.out.println("Avg ED Mean Door-to-Provider time: " +
-                Utils.formatMinsToHours(Statistics.calculateMean(edDisposedPatients, Simulator.StationName.ED, Statistics.Property.DOOR_TO_PROVIDER_TIME)));
+                Utils.formatMinsToHours(Statistics.calculateMean(this, Simulator.StationName.ED, Statistics.Property.DOOR_TO_PROVIDER_TIME)));
         System.out.println("Avg ED Mean LOS time: " +
-                Utils.formatMinsToHours(Statistics.calculateMean(edDisposedPatients, Simulator.StationName.ED, Statistics.Property.RESPONSE_TIME)));
+                Utils.formatMinsToHours(Statistics.calculateMean(this, Simulator.StationName.ED, Statistics.Property.RESPONSE_TIME)));
 
         int totalDeaths = Statistics.countDeaths(edDisposedPatients);
         System.out.println("Total deaths: " + totalDeaths);
@@ -280,7 +280,7 @@ public class Simulator {
 
     public static void main(String[] args) {
         Simulator sim = new Simulator();
-        sim.runForDays(365);
+        sim.runForDays(30);
         sim.printQuickStats(new Simulator.StationName[]{Simulator.StationName.ED, Simulator.StationName.SORT,
                 Simulator.StationName.REGISTRATION, Simulator.StationName.TRIAGE,
                 Simulator.StationName.FAST_TRACK, Simulator.StationName.RED,

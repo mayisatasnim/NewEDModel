@@ -1,5 +1,4 @@
 import java.util.List;
-
 public abstract class Statistics{
     enum Property {
         WAITING_TIME,
@@ -7,151 +6,60 @@ public abstract class Statistics{
         RESPONSE_TIME,
         DOOR_TO_PROVIDER_TIME,
         INTER_ARRIVAL_TIME     
-    }
-    public static double calculateMean(List<Patient> patients, Simulator.StationName stage, Property property) {
-        double sum = 0.0;
-        int count = patients.size(); //this includes all patients
+    }    
+    
+    // Overloaded method for TreeSet - much more efficient!
+    public static double calculateMean(Simulator simulator, Simulator.StationName stationName, Property property) {
+        if(stationName == Simulator.StationName.ED) {
+           if(property == Property.DOOR_TO_PROVIDER_TIME){
+                double sum = 0.0;
+                for (Patient p : simulator.edDisposedPatients) {
+                    sum += p.getDoorToProviderTime();
+                }
+                return sum / (double) simulator.edDisposedPatients.size();
+           }
 
-        int treatedCount = 0;
-
-        if(property == Property.INTER_ARRIVAL_TIME && count >= 1) {
-            if (count < 2) return 0.0;
-            sum = totalInterArrivalTime(patients, stage);
-            return sum / (count - 1);
+           if(property == Property.RESPONSE_TIME){
+                double sum = 0.0;
+                for (Patient p : simulator.edDisposedPatients) {
+                    sum += p.getEDResponseTime();
+                }
+                return sum / (double) simulator.edDisposedPatients.size();
+           }
+           throw new IllegalArgumentException("[STATISTICS-ERROR]ED station does not have a mean for this property.");
         }
 
-        for (Patient p : patients) {
-            //skip patients that lwbs and death
-            if (p.hasLWBS || p.died) continue;
-            treatedCount++;
-
-            double value = 0.0;
-            switch (stage) {
-                case SORT:
-                    switch (property) {
-                        case WAITING_TIME:
-                            value = p.sortingPT - p.sortingAT;
-                            break;
-                        case PROCESSING_TIME:
-                            value = p.sortingDT - p.sortingPT;
-                            break;
-                        case RESPONSE_TIME:
-                            value = p.sortingDT - p.sortingAT;
-                            break;        
-                        default:
-                            throw new IllegalArgumentException("Unknown property for SORTING stage");
-                    }
-                    break;
-                case REGISTRATION:
-                    switch (property) {
-                        case WAITING_TIME:
-                            value = p.registrationPT - p.registrationAT;
-                            break;
-                        case PROCESSING_TIME:
-                            value = p.registrationDT - p.registrationPT;
-                            break;
-                        case RESPONSE_TIME:
-                            value = p.registrationDT - p.registrationAT;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown property for REGISTRATION stage");
-                    }
-                    break;
-                case TRIAGE:
-                    switch (property) {
-                        case WAITING_TIME:
-                            value = p.triagePT - p.triageAT;
-                            break;
-                        case PROCESSING_TIME:
-                            value = p.triageDT - p.triagePT;
-                            break;
-                        case RESPONSE_TIME:
-                            value = p.triageDT - p.triageAT;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown property for TRIAGE stage");
-                    }
-                    break;
-                case ZONE:
-                case ERU:
-                case FAST_TRACK:
-                case RED:
-                case GREEN:
-                case BLUE:
-                    switch (property) {
-                        case WAITING_TIME:
-                            value = p.zonePT - p.zoneAT;
-                            break;
-                        case PROCESSING_TIME:
-                            value = p.zoneDT - p.zonePT;
-                            break;
-                        case RESPONSE_TIME:
-                            value = p.zoneDT - p.zoneAT;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown property for ZONE stage");
-                    }
-                    break;
-                case ED:
-                    switch (property) {
-                        case RESPONSE_TIME:
-                            value = p.zoneDT - p.sortingAT;
-                            break;
-                        case DOOR_TO_PROVIDER_TIME:
-                            value = p.zonePT - p.sortingAT;
-                            break;
-                        default:
-                            throw new IllegalArgumentException("Unknown property for ED stage");
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Unknown stage");
+        ServiceStation station = simulator.getStationByName(stationName);
+        if (property == Property.INTER_ARRIVAL_TIME) {
+            if (station.totalArrivals < 2) return 0.0;
+            return station.totalInterArrivalTime() / (double)(station.totalArrivals - 1);
+        }
+        
+        if(property == Property.WAITING_TIME) {
+            double sum = 0.0;
+            for (Patient p : station.departedPatients) {
+                sum += station.getWaitingTime(p);
             }
-            sum += value;
+            return sum / (double)station.departedPatients.size();
         }
-        return treatedCount > 0 ? sum / treatedCount : 0.0;
 
-       // return count > 0 ? sum / count : 0.0;
-    }
-    public static double totalInterArrivalTime(List<Patient> patients, Simulator.StationName stage) {
-        if (patients == null || patients.size() <= 1) return 0.0;
-
-        double sum = 0.0;
-        switch (stage) {
-            case ED:
-            case SORT:
-                for (int i = 1; i < patients.size(); i++) {
-                    double interArrivalTime = patients.get(i).sortingAT - patients.get(i - 1).sortingAT;
-                    sum += interArrivalTime;
-                }
-                break;
-            case REGISTRATION:
-                for (int i = 1; i < patients.size(); i++) {
-                    double interArrivalTime = patients.get(i).registrationAT - patients.get(i - 1).registrationAT;
-                    sum += interArrivalTime;
-                }
-                break;
-            case TRIAGE:
-                for (int i = 1; i < patients.size(); i++) {
-                    double interArrivalTime = patients.get(i).triageAT - patients.get(i - 1).triageAT;
-                    sum += interArrivalTime;
-                }
-                break;
-            case ZONE:
-            case ERU:
-            case FAST_TRACK:
-            case RED:
-            case GREEN:
-            case BLUE:
-                for (int i = 1; i < patients.size(); i++) {
-                    double interArrivalTime = patients.get(i).zoneAT - patients.get(i - 1).zoneAT;
-                    sum += interArrivalTime;
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown stage for inter-arrival time calculation");
+        if(property == Property.PROCESSING_TIME) {
+            double sum = 0.0;
+            for (Patient p : station.departedPatients) {
+                sum += station.getProcessingTime(p);
+            }
+            return sum / (double)station.departedPatients.size();
         }
-        return sum;
+
+        if(property == Property.RESPONSE_TIME) {
+            double sum = 0.0;
+            for (Patient p : station.departedPatients) {
+                sum += station.getResponseTime(p);
+            }
+            return sum / (double)station.departedPatients.size();
+        }
+
+        throw new IllegalArgumentException("[STATISTICS-ERROR]Invalid property: " + property + " for station: " + stationName);
     }
 
     public static int countDeaths(List<Patient> patients) {
