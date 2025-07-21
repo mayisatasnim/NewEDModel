@@ -1,7 +1,7 @@
 public class SortNurse extends ServiceStation {
 
     public SortNurse(Simulator simulator) {
-        super(Simulator.StationName.SORT, 10.0, 1.0, 1, simulator);
+        super(Simulator.StationName.SORT, 4.0, 2.0, 1, simulator);
     }
 
     @Override

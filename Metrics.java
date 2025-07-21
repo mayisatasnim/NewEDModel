@@ -11,6 +11,7 @@ public abstract class Metrics {
     protected double patientsInSystem; // (N) - Total Patients in System
     protected Simulator.StationName stationName;
     protected int totalArrivals;
+    protected double efficiency;
 
     protected Metrics(Simulator.StationName stationName) {
         this.stationName = stationName;
@@ -25,5 +26,6 @@ public abstract class Metrics {
         currentQueueSize = 0;
         utilization = 0.0;
         patientsInSystem = 0.0;
+        efficiency = 0.0;
     }
 }

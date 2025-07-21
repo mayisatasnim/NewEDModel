@@ -11,20 +11,22 @@ public abstract class Statistics{
     // Overloaded method for TreeSet - much more efficient!
     public static double calculateMean(Simulator simulator, Simulator.StationName stationName, Property property) {
         if(stationName == Simulator.StationName.ED) {
+            double sum = 0.0;
+            double count = 0.0;
            if(property == Property.DOOR_TO_PROVIDER_TIME){
-                double sum = 0.0;
                 for (Patient p : simulator.edDisposedPatients) {
                     sum += p.getDoorToProviderTime();
+                    count++; // needed to since LWBS & dead are not counted
                 }
-                return sum / (double) simulator.edDisposedPatients.size();
+                return sum / count;
            }
 
            if(property == Property.RESPONSE_TIME){
-                double sum = 0.0;
                 for (Patient p : simulator.edDisposedPatients) {
                     sum += p.getEDResponseTime();
+                    count++; // needed to since LWBS & dead are not counted
                 }
-                return sum / (double) simulator.edDisposedPatients.size();
+                return sum / count;
            }
            throw new IllegalArgumentException("[STATISTICS-ERROR]ED station does not have a mean for this property.");
         }

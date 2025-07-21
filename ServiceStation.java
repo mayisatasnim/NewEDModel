@@ -175,22 +175,23 @@ public abstract class ServiceStation extends Metrics {
         computeMetrics();
         System.out.println("\n[" + stationName + "]: Quick Stats");
         System.out.printf("Total arrivals: %d%n", totalArrivals);
-        System.out.printf("%% Arrivals rel to ED: %.2f%%%n", (totalArrivals * 100.0 / simulator.totalArrivals));
+        System.out.printf("Total processed: %d%n", departedPatients.size());
+        System.out.printf("Current Queue size [waiting]: %d%n", queue.size());
+        System.out.printf("Avg arrivals per day: %.2f%n", (totalArrivals / (double) simulator.numDays));
+        System.out.printf("%% arrivals at this station: %.2f%%%n", (totalArrivals * 100.0 / simulator.totalArrivals));
         if (stationName != Simulator.StationName.SORT) {
             System.out.printf("%% Arrivals rel to %s output: %.2f%%%n", getPrecedingStation().stationName, (totalArrivals * 100.0 / getPrecedingStation().totalArrivals));
         }
         if (stationName == Simulator.StationName.ERU) {
             System.out.printf("%% Arrivals rel to SORT: %.2f%%%n", (totalArrivals * 100.0 / simulator.sortNurse.totalArrivals));
         }
-        System.out.printf("Total processed: %d%n", departedPatients.size());
-        System.out.printf("Avg arrivals per day: %.2f%n", (totalArrivals / (double) simulator.numDays));
-        System.out.printf("%% arrivals at this station: %.2f%%%n", (totalArrivals / (double) simulator.totalArrivals) * 100.0);
-        System.out.printf("Current Queue size[waiting]: %d%n", queue.size());
         System.out.printf("[R]Mean %s waiting time: %s%n", stationName, Utils.formatMinsToHours(realMeanWaitingTime));
         System.out.printf("[R]Mean %s service time: %s%n", stationName, Utils.formatMinsToHours(realMeanServiceTime));
         System.out.printf("[E]Mean %s service time: %s%n", stationName, Utils.formatMinsToHours(meanServiceTime));
         System.out.printf("[R]Mean %s LOS [ResponseTime]: %s%n", stationName, Utils.formatMinsToHours(realResponseTime));
         System.out.printf("[R]Mean %s Inter-Arrival Time: %s%n", stationName, Utils.formatMinsToHours(realMeanInterArrivalTime));
+        System.out.printf("Utilization (ρ): %.2f%n", utilization);
+        System.out.printf("Efficiency: %.2f%%%n", efficiency * 100.0);
     }
 
     public void computeMetrics() {
@@ -203,6 +204,7 @@ public abstract class ServiceStation extends Metrics {
         realServiceRate = (realMeanServiceTime > 0) ? 1.0 / realMeanServiceTime : 0;
         realArrivalRate = (realMeanInterArrivalTime > 0) ? 1.0 / realMeanInterArrivalTime : 0;
         utilization = (realServiceRate > 0) ? realArrivalRate / realServiceRate : 0;  // Utilization (ρ) = λ / μ
+        efficiency = totalProcessed * 1.0 / (double) totalArrivals; // Efficiency = Throughput / Arrivals
 
     }
 

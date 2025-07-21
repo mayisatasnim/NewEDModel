@@ -176,17 +176,19 @@ public class Patient {
     }
 
     public double getDoorToProviderTime() {
-        if(hasLWBS()){
-            throw new IllegalStateException("[PATIENT-ERROR]Cannot get DoorToProviderTime for LWBS patient: " + this.id+ " Last seen at: "+ currentStationName);
+        if(!(zonePT == 0.0 || hasLWBS() || died)) { // exclude LWBS patients
+            return this.zonePT - this.sortingAT;
         }
-        return this.zonePT - this.sortingAT;
+
+        return 0.0; // Return 0 for LWBS patients
     }
 
     public double getEDResponseTime(){
-        if(hasLWBS()){
-            throw new IllegalStateException("[PATIENT-ERROR]Cannot get LOS for LWBS patient: " + this.id+ " Last seen at: "+ currentStationName);
+        if(!(zoneDT == 0.0 || hasLWBS() || died)) { // exclude LWBS patients
+            return this.zoneDT - this.sortingAT;
         }
-        return this.zoneDT - this.sortingAT;
+        
+        return 0.0; // Return 0 for LWBS patients
     }
     public static void main(String[]args){
         // Test both modes
