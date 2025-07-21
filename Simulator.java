@@ -238,7 +238,6 @@ public class Simulator {
 
     public void printQuickStats(Simulator.StationName stationName) {
         if(stationName == Simulator.StationName.ED) {
-            System.out.println("\n====== OVERALL ED SUMMARY ======");
             this.printQuickStats();
             return;
         }

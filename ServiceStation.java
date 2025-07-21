@@ -128,6 +128,10 @@ public abstract class ServiceStation extends Metrics {
     }
 
     public double getWaitingTime(Patient patient) {
+        return getProcessingTime(patient) - getArrivalTime(patient);
+    }
+    
+    public double getServiceTime(Patient patient) {
         return getDepartureTime(patient) - getProcessingTime(patient);
     }
 

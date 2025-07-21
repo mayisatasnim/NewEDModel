@@ -46,7 +46,7 @@ public abstract class Statistics{
         if(property == Property.PROCESSING_TIME) {
             double sum = 0.0;
             for (Patient p : station.departedPatients) {
-                sum += station.getProcessingTime(p);
+                sum += station.getServiceTime(p);
             }
             return sum / (double)station.departedPatients.size();
         }
