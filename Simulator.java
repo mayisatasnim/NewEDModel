@@ -204,8 +204,7 @@ public class Simulator {
 
         int totalDeaths = Statistics.countDeaths(edDisposedPatients);
         System.out.println("Total deaths: " + totalDeaths);
-        System.out.println("Death Rate: " + (double)totalDeaths/totalArrivals +"%");
-        System.out.println("Death Rate: " + (double) totalDeaths/totalArrivals +"%");
+        System.out.println("Death Rate: " + ((double)totalDeaths/totalArrivals)*100.0 +"%");
 
         System.out.println("Avg deaths per day: " + (totalDeaths / (double) numDays));
         double lwbs = getTotalLWBSPatients();
