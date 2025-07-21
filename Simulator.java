@@ -148,9 +148,9 @@ public class Simulator {
         int hour = (int) ((currentTime / 60.0) % 24);
 
         // Update staff counts
-        if (hour >= 0 && hour < 7) {
+       if (hour >= 0 && hour < 7) {
             greenZone.setStaffAvailable(3);
-            redZone.setStaffAvailable(4);
+            redZone.setStaffAvailable(2);
             fastTrackZone.setStaffAvailable(1);
             eruZone.setStaffAvailable(1);
         } else if (hour >= 7 && hour < 15) {
@@ -160,10 +160,11 @@ public class Simulator {
             eruZone.setStaffAvailable(4);
         } else {
             greenZone.setStaffAvailable(3);
-            redZone.setStaffAvailable(3);
-            fastTrackZone.setStaffAvailable(2);
+            redZone.setStaffAvailable(4);
+            fastTrackZone.setStaffAvailable(1);
             eruZone.setStaffAvailable(2);
         }
+
 
         //attempt treatment w/ updated staff
         greenZone.attemptToStartTreatmentForAll(currentTime);
