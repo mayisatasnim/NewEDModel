@@ -65,7 +65,12 @@ public abstract class ServiceStation extends Metrics {
     protected void scheduleNextDeparture(double currentTime) {
         Patient nextPatient = queue.poll();
         setPatientProcessingTime(nextPatient, currentTime);
+
         double serviceTime = Utils.getNormal(meanServiceTime, serviceStdDev);
+
+        //double serviceTime = Utils.getExp((1.0/4.0));
+
+
         double nextDepartureTime = currentTime + serviceTime;
         eventList.add(new Event(nextDepartureTime, getDepartureEventType(), nextPatient));
         busyBeds++;

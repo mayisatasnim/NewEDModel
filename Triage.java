@@ -64,35 +64,45 @@ public class Triage extends Zone {
 
     @Override
     protected void sendToAppropriateNextStation(Event currentEvent) {
-            int ESI = currentEvent.patient.ESILevel;
+        int ESI = currentEvent.patient.ESILevel;
+        Zone targetZone;
 
-            //assign zone based on acuity and esi
-            Zone targetZone;
+        // ESI 1
+        if (ESI == 1) {
+            targetZone = simulator.eruZone;
+        }
 
-            //high
-            if (ESI == 1) targetZone = simulator.eruZone;
+        // ESI 2
+        else if (ESI == 2) targetZone = simulator.redZone;    // 70%
 
-                //moderate and low acuity
-            else if (ESI == 2) targetZone = simulator.redZone;
 
-                //divide esi 3 patients between red and green zone
-            else if (ESI == 3){
-                double r = Math.random();
-                if(r<0.50){
-                    targetZone = simulator.redZone;
-                } else targetZone = simulator.greenZone;
+
+        // ESI 3
+        else if (ESI == 3) {
+            double r = Math.random();
+            if (r < 0.33) {
+                targetZone = simulator.redZone;    // 30%
+            } else {
+                targetZone = simulator.greenZone;  // 70%
             }
+        }
 
-            else if (ESI == 4){
-                double r = Math.random();
-                if(r<0.4){
-                    targetZone = simulator.greenZone;
-                } else targetZone = simulator.fastTrackZone;
+        // ESI 4
+        else if (ESI == 4) {
+            double r = Math.random();
+            if (r < 0.2) {
+                targetZone = simulator.greenZone;      // 20%
+            } else {
+                targetZone = simulator.fastTrackZone;  // 80%
             }
+        }
 
-                //fast track
-            else targetZone = simulator.fastTrackZone;
+        // ESI 5
+        else {
+            targetZone = simulator.fastTrackZone;
+        }
 
         targetZone.queuePatientFromAnotherStation(currentEvent);
     }
+
 }

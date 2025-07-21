@@ -42,7 +42,7 @@ public class Patient {
         this.regNo = regNo;
         this.age = inferAge();
         this.arrivalMode = inferArrivalMode();
-        this.ESILevel = inferESILevel(this.arrivalMode);
+        this.ESILevel = inferESILevel();
         this.acuity = inferAcuity(this.ESILevel);
         this.hasLWBS = false;
         this.LWBSProbability = 0.0;
@@ -76,24 +76,35 @@ public class Patient {
         return patientType;
     }
 
-    public int inferESILevel(String arrivalMode) {
-        double r = Math.random(); // gets a number between 0 and 1
+//    public int inferESILevel(String arrivalMode) {
+//        double r = Math.random(); // gets a number between 0 and 1
+//
+//        if (arrivalMode.equals("Walk-in")) {
+//            if (r < 0.02) return 1;       // 1% ESI 1
+//            else if (r < 0.20) return 2;  // 18% ESI 2
+//            else if (r < 0.66) return 3;  // 46% ESI 3
+//            else if (r < 0.97) return 4;  // 31% ESI 4
+//            else return 5;               // 3% ESI 5
+//
+//        } else {
+//            if (r < 0.05) return 1;       // 5% ESI 1
+//            else if (r < 0.30) return 2;  // 25% ESI 2
+//            else if (r < 0.70) return 3;  // 40% ESI 3
+//            else if (r < 0.99) return 4;  // 29% ESI 4
+//            else return 5;               // 3% ESI 5
+//        }
+//    }
 
-        if (arrivalMode.equals("Walk-in")) {
-            if (r < 0.02) return 1;       // 1% ESI 1
-            else if (r < 0.20) return 2;  // 18% ESI 2
-            else if (r < 0.66) return 3;  // 46% ESI 3
-            else if (r < 0.97) return 4;  // 31% ESI 4
-            else return 5;               // 3% ESI 5
+    public int inferESILevel() {
+        double r = Math.random();
 
-        } else {
-            if (r < 0.05) return 1;       // 5% ESI 1
-            else if (r < 0.30) return 2;  // 25% ESI 2
-            else if (r < 0.70) return 3;  // 40% ESI 3
-            else if (r < 0.99) return 4;  // 29% ESI 4
-            else return 5;               // 3% ESI 5
-        }
+        if (r < 0.01) return 1;              // 1.0%
+        else if (r < 0.01 + 0.294) return 2;   // +29.4%
+        else if (r < 0.01 + 0.294 + 0.488) return 3; // +48.8%
+        else if (r < 0.01 + 0.294 + 0.488 + 0.173) return 4; // +17.3%
+        else return 5; // 2.2%
     }
+
 
     public String inferAcuity(int ESILevel){
         switch(ESILevel){
