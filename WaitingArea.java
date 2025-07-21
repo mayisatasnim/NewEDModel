@@ -41,6 +41,7 @@ public class WaitingArea extends TreeSet<Patient> {
         return new ArrayList<>(this);
     }
 
+
     // test 
     public static void main(String[] args) {
         WaitingArea wa = new WaitingArea(PrioritizationPolicy.EARLY_ARRIVAL_FIRST);
