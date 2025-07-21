@@ -64,7 +64,7 @@ public class Simulator {
         triage.setServiceTime(5, 2);
         eruZone.setServiceTime(76, 42);
         redZone.setServiceTime(48, 27);
-        greenZone.setServiceTime(27, 15);
+        greenZone.setServiceTime(48, 27);
         fastTrackZone.setServiceTime(18, 11);
     }
 

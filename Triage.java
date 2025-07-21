@@ -57,7 +57,7 @@ public class Triage extends Zone {
 
             else if (ESI == 4){
                 double r = Math.random();
-                if(r<0.60){
+                if(r<0.7){
                     targetZone = simulator.greenZone;
                 } else targetZone = simulator.fastTrackZone;
             }

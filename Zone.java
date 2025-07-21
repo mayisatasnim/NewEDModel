@@ -22,9 +22,9 @@ public class Zone extends ServiceStation {
     private static int getZoneCapacity(Simulator.StationName zoneName) {
         switch (zoneName) {
             case ERU: return 14;
-            case FAST_TRACK: return 43;
-            case RED: return 74;
-            case GREEN: return 32;
+            case FAST_TRACK: return 19;
+            case RED: return 34;
+            case GREEN: return 10;
             default: return 1;
         }
     }
