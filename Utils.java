@@ -16,7 +16,7 @@ public abstract class Utils {
         int hours = (int) (minutes / 60.0);
         int mins = (int) (minutes % 60.0);
         if(hours > 0)
-            return String.format("%02d h + %02d mins", hours, mins);
+            return String.format("%02d h + %02d mins <=> %.2f mins", hours, mins, minutes);
         return String.format("%02d mins", mins);
     }
 }

@@ -48,7 +48,10 @@ public class Zone extends ServiceStation {
     protected Event.EventType getDepartureEventType() {
         return Event.EventType.zoneDeparture;
     }
-
+    @Override
+    public ServiceStation getPrecedingStation() {
+        return simulator.triage;
+    }
     @Override
     protected void sendToAppropriateNextStation(Event currentEvent) {
         if (!currentEvent.patient.isCountedDisposed) {

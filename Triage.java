@@ -27,6 +27,11 @@ public class Triage extends ServiceStation {
     protected double getPatientArrivalTime(Patient patient) {
         return patient.triageAT;
     }
+
+    @Override
+    public ServiceStation getPrecedingStation() {
+        return simulator.registration;
+    }
     @Override
     protected void sendToAppropriateNextStation(Event currentEvent) {
         int ESI = currentEvent.patient.ESILevel;
