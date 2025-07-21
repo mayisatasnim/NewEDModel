@@ -70,6 +70,7 @@ public class Zone extends ServiceStation {
         setPatientArrivalTime(patient, currentTime); // optional if Zone-specific time needed
         patient.currentStationName = stationName;
         totalArrivals++;
+        arrivedPatients.add(patient);
 
         // if bed is available
         if (busyBeds < numBeds) {
@@ -92,6 +93,7 @@ public class Zone extends ServiceStation {
         patient.currentStationName = this.stationName;
 
         totalArrivals++;
+        arrivedPatients.add(patient); 
 
 
         // admit if a bed is available
