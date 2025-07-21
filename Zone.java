@@ -108,7 +108,7 @@ public class Zone extends ServiceStation {
 
     //start treatment
     private void attemptToStartTreatment(Patient patient, double currentTime) {
-        if (activeTreatments < maxStaffAvailable && waitingForStaff.contains(patient)) {
+        if (activeTreatments < maxStaffAvailable) {
 
             //begin treatment
             waitingForStaff.remove(patient);
@@ -128,7 +128,8 @@ public class Zone extends ServiceStation {
     //fill staff slots from queue
     public void attemptToStartTreatmentForAll(double currentTime) {
         while (!waitingForStaff.isEmpty() && activeTreatments < maxStaffAvailable) {
-            attemptToStartTreatment(waitingForStaff.peek(), currentTime);
+            Patient next = waitingForStaff.poll();
+            attemptToStartTreatment(next, currentTime);
         }
     }
 
@@ -137,8 +138,6 @@ public class Zone extends ServiceStation {
     public void departServiceStation(Event currentEvent) {
         Patient patient = currentEvent.patient;
         double currentTime = currentEvent.eventTime;
-
-
 
         // unrealistic to assume ESI 1 patients are dying while waiting since treatment should immediately start
         if (patient.ESILevel >= 1 && patient.ESILevel <= 3) {

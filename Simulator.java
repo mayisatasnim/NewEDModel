@@ -59,9 +59,9 @@ public class Simulator {
     }
 
     public void configureServiceTimes() {
-        sortNurse.setServiceTime(4, 1);
-        registration.setServiceTime(5, 1);
-        triage.setServiceTime(13, 2);
+        sortNurse.setServiceTime(4, 2);
+        registration.setServiceTime(3, 2);
+        triage.setServiceTime(5, 2);
         eruZone.setServiceTime(168, 30);
         redZone.setServiceTime(247, 30);
         greenZone.setServiceTime(251, 30);
@@ -136,6 +136,8 @@ public class Simulator {
 
     }
 
+
+
     // dynamic staffing
     public void staff(double currentTime) {
         int hour = (int) ((currentTime / 60.0) % 24);
@@ -149,13 +151,13 @@ public class Simulator {
         } else if (hour >= 7 && hour < 15) {
             greenZone.setStaffAvailable(18);
             redZone.setStaffAvailable(20);
-            fastTrackZone.setStaffAvailable(4);
+            fastTrackZone.setStaffAvailable(3);
             eruZone.setStaffAvailable(5);
         } else {
             greenZone.setStaffAvailable(18);
             redZone.setStaffAvailable(20);
-            fastTrackZone.setStaffAvailable(5);
-            eruZone.setStaffAvailable(6);
+            fastTrackZone.setStaffAvailable(3);
+            eruZone.setStaffAvailable(5);
         }
 
         //attempt treatment w/ updated staff
@@ -276,7 +278,7 @@ public class Simulator {
 
     public static void main(String[] args) {
         Simulator sim = new Simulator();
-        sim.runForDays(1);
+        sim.runForDays(365);
         sim.printQuickStats(new Simulator.StationName[]{Simulator.StationName.ED, Simulator.StationName.SORT,
                 Simulator.StationName.REGISTRATION, Simulator.StationName.TRIAGE,
                 Simulator.StationName.FAST_TRACK, Simulator.StationName.RED,
